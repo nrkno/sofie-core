@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react'
+import React, { RefObject, useImperativeHandle, useContext, useRef, useState } from 'react'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
@@ -27,6 +27,7 @@ interface IProps {
 	studio: UIStudio | undefined
 	className?: string
 	style?: React.CSSProperties
+	ref?: RefObject<HTMLDivElement | null>
 	onPointerEnter?: React.EventHandler<React.PointerEvent<HTMLDivElement>>
 	onPointerLeave?: React.EventHandler<React.PointerEvent<HTMLDivElement>>
 	onClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
@@ -71,6 +72,7 @@ type MousePagePosition = { pageX: number; pageY: number }
 
 export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 	const {
+		ref,
 		piece,
 		partId,
 		style,
@@ -83,6 +85,9 @@ export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 
 	const [highlight] = useState(false)
 	const element = useRef<HTMLDivElement>(null)
+
+	useImperativeHandle(ref, () => element.current)
+
 	const [hovering, setHovering] = useState<MousePagePosition | null>(null)
 	const [elementOffset, setElementOffset] = useState<{ top: number; left: number; width: number } | undefined>(
 		undefined

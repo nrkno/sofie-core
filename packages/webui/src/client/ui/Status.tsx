@@ -71,25 +71,27 @@ export default function Status(): JSX.Element {
 	useSubscription(CorelibPubSub.showStyleVariants, null, null)
 
 	return (
-		<div className="mt-5 mx-5 has-statusbar">
-			<Row>
-				<Col xs={12} sm={4} md={3} lg={2}>
-					<StatusMenu />
-				</Col>
-				<Col xs={12} sm={8} md={9} lg={10}>
-					<Switch>
-						{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
-						<Route path="/status/messages" component={ExternalMessages} />
-						<Route path="/status/media" component={MediaStatus} />
-						<Route path="/status/media-legacy" component={MediaManagerStatus} />
-						<Route path="/status/expected-packages" component={ExpectedPackagesStatus} />
-						<Route path="/status/system" component={SystemStatus} />
-						<Route path="/status/userLog" component={UserActivity} />
-						<Route path="/status/evaluations" component={EvaluationView} />
-						<Redirect to="/status/system" />
-					</Switch>
-				</Col>
-			</Row>
-		</div>
+		<>
+			<div className="mt-5 mx-5 has-statusbar">
+				<Row>
+					<Col xs={12} sm={4} md={3} lg={2}>
+						<StatusMenu />
+					</Col>
+					<Col xs={12} sm={8} md={9} lg={10}>
+						<Switch>
+							{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
+							<Route path="/status/messages" component={ExternalMessages} />
+							<Route path="/status/media" component={MediaStatus} />
+							<Route path="/status/media-legacy" component={MediaManagerStatus} />
+							<Route path="/status/expected-packages" component={ExpectedPackagesStatus} />
+							<Route path="/status/system" component={SystemStatus} />
+							<Route path="/status/userLog" component={UserActivity} />
+							<Route path="/status/evaluations" component={EvaluationView} />
+							<Redirect to="/status/system" />
+						</Switch>
+					</Col>
+				</Row>
+			</div>
+		</>
 	)
 }

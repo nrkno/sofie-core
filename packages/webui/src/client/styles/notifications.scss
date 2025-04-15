@@ -213,6 +213,8 @@
 	overflow: hidden;
 
 	.notifications__toggle-button__icon {
+		position: relative;
+
 		> svg {
 			position: absolute;
 			width: calc($fullscreen-controls__button--radius / 1.75);

@@ -80,7 +80,7 @@ export const PreviewPopUp = React.forwardRef<
 					x,
 					anchor?.getBoundingClientRect().y ?? 0
 				)
-				if (update) update().catch((e) => console.log(e))
+				if (update) update().catch((e) => console.error(e))
 			}
 			document.addEventListener('mousemove', listener)
 

@@ -311,7 +311,6 @@ function SystemManagementCleanup() {
 		MeteorCall.system
 			.cleanupIndexes(false)
 			.then((indexesToRemove) => {
-				console.log(indexesToRemove)
 				doModalDialog({
 					title: t('Remove indexes'),
 					message: t('This will remove {{indexCount}} old indexes, do you want to continue?', {
@@ -423,8 +422,6 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 							MeteorCall.system
 								.cleanupOldData(true)
 								.then((results) => {
-									console.log(results)
-
 									if (typeof results === 'string') {
 										doModalDialog({
 											title: t('Error'),

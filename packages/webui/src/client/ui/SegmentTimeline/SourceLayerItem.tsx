@@ -247,8 +247,6 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 					}
 				)
 
-				console.log(previewContents)
-
 				if (previewContents.length) {
 					previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
 						...previewOptions,

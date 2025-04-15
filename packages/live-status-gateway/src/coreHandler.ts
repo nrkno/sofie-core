@@ -281,11 +281,9 @@ export class CoreHandler {
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 			const cmd = cmds.findOne(id)
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
-			// console.log('addedChangedCommand', id)
+
 			if (cmd.deviceId === functionObject.core.deviceId) {
 				this.executeFunction(cmd, functionObject)
-			} else {
-				// console.log('not mine', cmd.deviceId, this.core.deviceId)
 			}
 		}
 		observer.added = (id) => {

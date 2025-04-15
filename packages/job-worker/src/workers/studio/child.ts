@@ -16,7 +16,6 @@ import { WorkerJobResult } from '../parent-base'
 import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/influxdb'
 import { getPrometheusMetricsString, setupPrometheusMetrics } from '@sofie-automation/corelib/dist/prometheus'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -126,7 +125,6 @@ export class StudioWorkerChild {
 					}
 				} catch (e) {
 					const userError = UserError.fromUnknown(e)
-					console.log('border', userError.toErrorString(), stringifyError(e))
 
 					logger.error(`Studio job "${jobName}" errored: ${userError.toErrorString()}`)
 

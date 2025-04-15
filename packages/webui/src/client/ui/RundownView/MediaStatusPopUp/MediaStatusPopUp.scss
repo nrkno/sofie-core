@@ -33,9 +33,3 @@
 		opacity: 1;
 	}
 }
-
-.media-status-panel.velocity-animating .media-status-panel__pop-out {
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 200ms, visibility 0ms 200ms;
-}

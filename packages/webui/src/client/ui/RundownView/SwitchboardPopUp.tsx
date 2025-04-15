@@ -10,10 +10,11 @@ import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import Tooltip from 'rc-tooltip'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { ToggleSwitchControl } from '../../lib/Components/ToggleSwitch'
+import { PopUpPanel } from './PopUpPanel'
 
 interface IProps {
 	onStudioRouteSetSwitch?: (
-		e: React.MouseEvent<HTMLElement>,
+		e: React.ChangeEvent<HTMLInputElement>,
 		routeSetId: string,
 		routeSet: StudioRouteSet,
 		state: boolean
@@ -39,7 +40,7 @@ export function SwitchboardPopUp(props: Readonly<IProps>): JSX.Element {
 	}
 
 	return (
-		<div className="switchboard-pop-up-panel" role="dialog">
+		<PopUpPanel className="switchboard-pop-up-panel" role="dialog">
 			<div className="switchboard-pop-up-panel__inside">
 				<h2 className="">{t('Switchboard')}</h2>
 				{Object.entries<[string, StudioRouteSet][]>(exclusivityGroups).map(([key, routeSets]) => (
@@ -148,6 +149,6 @@ export function SwitchboardPopUp(props: Readonly<IProps>): JSX.Element {
 					</div>
 				))}
 			</div>
-		</div>
+		</PopUpPanel>
 	)
 }
