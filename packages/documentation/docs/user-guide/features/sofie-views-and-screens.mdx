@@ -7,11 +7,12 @@ import TabItem from '@theme/TabItem'
 
 # Sofie Views and Screens
 
- ## Definitions
- * A _**View**_ is definied as a particular layout of Sofie's main user interface.
- 	* A _**Mode**_ is one of several ways to configure a particular "View" of Sofie's main user interface.
-   * A _**Panel**_ is defined as an expandable/collapsable area of Sofie's main user interface.
- * A _**Screen**_ is defined a layout intended to be used on an external display, in addition to with Sofie's main user interface.
+## Definitions
+
+- A _**View**_ is definied as a particular layout of Sofie's main user interface.
+  - A _**Mode**_ is one of several ways to configure a particular "View" of Sofie's main user interface.
+  - A _**Panel**_ is defined as an expandable/collapsable area of Sofie's main user interface.
+- A _**Screen**_ is defined a layout intended to be used on an external display, in addition to with Sofie's main user interface.
 
 ## Lobby View
 
@@ -31,7 +32,7 @@ The _Rundown View_ is the main view that the producer is working in.
 
 #### Take Point
 
-The Take point is currently playing [Part](#part) in the rundown, indicated by the "On Air" line in the GUI.  
+The Take point is currently playing [Part](#part) in the rundown, indicated by the "On Air" line in the GUI.
 What's played on air is calculated from the timeline objects in the Pieces in the currently playing part.
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
@@ -59,16 +60,16 @@ If a Piece has more or less content than the Part's expected duration allows, an
 Elements in the [Next point](#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and playout devices used. This feature is called "Lookahead".
 
 ### Rundown View Modes
+
 In the top-right corner of the Segment, there's a button controlling the display style of a given Segment. The default display style of a Segment can be indicated by the [Blueprints](../concepts-and-architecture.md#blueprints), but the user can switch to a different mode at any time. You can also change the display mode of all Segments at once, using a button in the bottom-right corner of the Rundown View.
 
 All user interactions work in the Storyboard Mode and List Mode the same as in Timeline Mode: Takes, AdLibs, Holds, and moving the [Next Point](#next-point) around the Rundown.
 
+#### Timeline Mode
 
- #### Timeline Mode
- The default mode for the Rundown.
+The default mode for the Rundown.
 
-
- #### Storyboard Mode
+#### Storyboard Mode
 
 ### Storyboard Mode
 
@@ -95,7 +96,7 @@ If a Part has an _in-transition_ Piece, it will be displayed to the left of the 
 This List Mode is designed to be used in productions that are mixing pre-planned and timed segments with more free-flowing production or mixing short live in-camera links with longer pre-produced clips, while trying to keep as much of the show in the viewport as possible, at the expense of hiding some of the content from the User and the _duration_ of the Part on screen having no bearing on it's _width_. This mode also allows Sofie to visualize content _beyond_ the planned duration of a Part.
 
 :::info
-The Segment header area also shows the expected (planned) durations for all the Parts and will also show which Parts are sharing timing in a timing group using a *⌊* symbol in the place of a counter.
+The Segment header area also shows the expected (planned) durations for all the Parts and will also show which Parts are sharing timing in a timing group using a _⌊_ symbol in the place of a counter.
 :::
 
 All user interactions work in the Storyboard and List View mode the same as in Timeline mode: Takes, AdLibs, Holds and moving the [Next Point](#next-point) around the Rundown.
@@ -185,14 +186,13 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 ![Media Status panel](/img/docs/main/features/media-status-rundown-view-panel.png)
 
-This provides an overview of the status of the various Media assets required by 
-this Rundown for playback. You can sort these assets according to their playout 
+This provides an overview of the status of the various Media assets required by
+this Rundown for playback. You can sort these assets according to their playout
 order, status, Source Layer Name and Piece Name by clicking on the table header.
 
-Note that while the _Filter..._ text field is focused, you will not be able to 
+Note that while the _Filter..._ text field is focused, you will not be able to
 use hotkey triggers for playout actions. You can remove the focus from the field
 by pressing the <kbd>Esc</kbd> key.
-
 
 ## Evaluations
 
@@ -206,10 +206,9 @@ Evaluations can be configured to be sent to Slack, by setting the "Slack Webhook
 
 The [Settings View](../configuration/settings-view.md) is only available to users with the [Access Level](access-levels.md) set correctly.
 
+## Screens
 
- ## Screens
-
- ### Prompter Screen
+### Prompter Screen
 
 `/prompter/:studioId`
 
@@ -218,6 +217,14 @@ The [Settings View](../configuration/settings-view.md) is only available to user
 A fullscreen page which displays the prompter text for the currently active rundown. The prompter can be controlled and configured in various ways, see more at the [Prompter](prompter.md) documentation. If no Rundown is active in a given studio, the [Screensaver](sofie-views.mdx#screensaver) will be displayed.
 
 ### Presenter Screen
+
+`/countdowns/:studioId/director`
+
+![Director View](/img/docs/main/features/director-screen-example.png)
+
+A fullscreen page, intended to be shown to the director. It displays countdown timers for the current and next items in the rundown. If no Rundown is active in a given studio, the [Screensaver](sofie-views.mdx#screensaver) will be shown.
+
+## Presenter View
 
 `/countdowns/:studioId/presenter`
 
@@ -245,11 +252,11 @@ The Pieces are displayed as a Timeline, with the Pieces moving right-to-left as 
 
 This screen can be configured using query parameters:
 
-| Query parameter | Type | Description | Default |
-| :-------------- | :--- | :---------- | :------ |
-| `sourceLayerIds` | string | A comma-separated list of Source Layer IDs to be considered for display | _(show all)_ |
-| `studioLabels` | string | A comma-separated list of Studio Labels (Piece `.content.studioLabel` values) to be considered for display | _(show all)_ |
-| `fullscreen` | 0 / 1 | Should the screen be shown fullscreen on the device on first user interaction | 0 |
+| Query parameter  | Type   | Description                                                                                                | Default      |
+| :--------------- | :----- | :--------------------------------------------------------------------------------------------------------- | :----------- |
+| `sourceLayerIds` | string | A comma-separated list of Source Layer IDs to be considered for display                                    | _(show all)_ |
+| `studioLabels`   | string | A comma-separated list of Studio Labels (Piece `.content.studioLabel` values) to be considered for display | _(show all)_ |
+| `fullscreen`     | 0 / 1  | Should the screen be shown fullscreen on the device on first user interaction                              | 0            |
 
 Example: [http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1](http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1)
 
@@ -297,16 +304,16 @@ An API endpoint for the system status is also available under the URL `/health`
 
 ### Media Status Screen
 
-This screen is a summary of all the media required for playback for Rundowns 
-present in this System. This view allows you to see if clips are ready for 
-playback or if they are still waiting to become available to be transferred 
+This screen is a summary of all the media required for playback for Rundowns
+present in this System. This view allows you to see if clips are ready for
+playback or if they are still waiting to become available to be transferred
 onto a playout system.
 
 ![Media Status Screen](/img/docs/main/features/media-status.png)
 
 By default, the Media items are sorted according to their position in the
 rundown, and the rundowns are in the same order as in the [Lobby View]
-(#lobby-view). You can change the sorting order by clicking on the buttons in 
+(#lobby-view). You can change the sorting order by clicking on the buttons in
 the table header.
 
 The Rundown View also has a panel that presents this information in the [context of the current Rundown](#media-status-panel).
@@ -339,7 +346,7 @@ The execution time column displays **coreDuration** + **gatewayDuration** \(**ti
 - **gatewayDuration** : The time it took for Playout Gateway to execute the timeline \(ie stored-result-into-database 🠺 timeline-resolved 🠺 callback-to-core\)
 - **timelineResolveDuration**: The duration it took in TSR \(in Playout Gateway\) to resolve the timeline
 
-Important to note is that **gatewayDuration** begins at the exact moment **coreDuration** ends.  
+Important to note is that **gatewayDuration** begins at the exact moment **coreDuration** ends.
 So **coreDuration + gatewayDuration** is the full time it took from beginning-of-user-action to the timeline-resolved \(plus a little extra for the final callback for reporting the measurement\).
 
 #### Action

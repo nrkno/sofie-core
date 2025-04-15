@@ -27,7 +27,7 @@ export function RemoteSpeakInputIcon({ abbreviation }: { abbreviation?: string }
 					style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}
 					className="label"
 				>
-					{abbreviation ? abbreviation : 'RSK'}
+					{abbreviation !== undefined ? abbreviation : 'RSK'}
 				</tspan>
 			</text>
 		</svg>
