@@ -132,7 +132,7 @@ interface PeripheralDeviceTranslated {
 	_id: PeripheralDeviceId
 	name: string
 	lastSeen: number
-	deviceConfigSchema: JSONBlob<JSONSchema>
+	deviceConfigSchema: JSONBlob<JSONSchema> | undefined
 }
 
 interface ParentDevicesTableProps {
@@ -172,7 +172,7 @@ function GenericParentDevicesTable({
 					_id: device._id,
 					name: device.name || unprotectString(device._id),
 					lastSeen: device.lastSeen,
-					deviceConfigSchema: device.configManifest.deviceConfigSchema,
+					deviceConfigSchema: device.configManifest?.deviceConfigSchema,
 				})
 			)
 		}

@@ -53,7 +53,7 @@ export function GenericAttahcedSubDeviceSettingsComponent({
 
 	return (
 		<>
-			{Object.keys(device.configManifest.subdeviceManifest ?? {}).length > 0 && (
+			{Object.keys(device.configManifest?.subdeviceManifest ?? {}).length > 0 && (
 				<>
 					<h2 className="mb-4">{t('Attached Subdevices')}</h2>
 
