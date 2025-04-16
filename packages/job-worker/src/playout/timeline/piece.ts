@@ -106,7 +106,7 @@ export function getPieceEnableInsidePart(
 
 	// If the part has an end time, we can consider post-roll
 	if (partHasEndTime && partTimings.toPartPostroll) {
-		if (!pieceEnable.duration) {
+		if (pieceEnable.duration === undefined) {
 			// make sure that the control object is shortened correctly
 			pieceEnable.end = `#${partGroupId} - ${partTimings.toPartPostroll}`
 		}
