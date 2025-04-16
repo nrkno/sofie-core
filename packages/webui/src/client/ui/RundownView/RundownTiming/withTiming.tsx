@@ -181,7 +181,8 @@ export function useTiming(
 	const isDirty = useRef(false)
 	const previousValue = useRef<RundownTimingContext | null>(null)
 
-	const filterGetter = useRef(getFilterFunction(filter))
+	const filterGetter = useRef<TimingFilterFunction | undefined>()
+	filterGetter.current = getFilterFunction(filter)
 
 	const refreshComponent = useCallback(() => {
 		if (!filterGetter.current) {
@@ -194,7 +195,7 @@ export function useTiming(
 				setForceUpdate(Date.now())
 			}
 		}
-	}, [filter])
+	}, [])
 
 	useEffect(() => {
 		window.addEventListener(rundownTimingEventFromTickResolution(tickResolution), refreshComponent)

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { withTiming, WithTiming } from './withTiming.js'
 import ClassNames from 'classnames'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { LoopingIcon } from '../../../lib/ui/icons/looping.js'
@@ -16,12 +15,12 @@ interface IRundownNameProps {
 	hideDiff?: boolean
 }
 
-export const RundownName = withTiming<IRundownNameProps, {}>()(function RundownName({
+export function RundownName({
 	rundownPlaylist,
 	currentRundown,
 	rundownCount,
 	hideDiff,
-}: WithTiming<IRundownNameProps>): JSX.Element {
+}: IRundownNameProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
@@ -90,4 +89,4 @@ export const RundownName = withTiming<IRundownNameProps, {}>()(function RundownN
 					RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
 		</div>
 	)
-})
+}

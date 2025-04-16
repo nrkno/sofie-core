@@ -1,10 +1,5 @@
 import React, { useMemo } from 'react'
-import {
-	TimingDataResolution,
-	TimingTickResolution,
-	WithTiming,
-	withTiming,
-} from '../RundownView/RundownTiming/withTiming.js'
+import { TimingDataResolution, TimingTickResolution, useTiming } from '../RundownView/RundownTiming/withTiming.js'
 import { RundownUtils } from '../../lib/rundown.js'
 import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame.js'
 import classNames from 'classnames'
@@ -29,14 +24,8 @@ function timeToPosition(time: number, timelineBase: number, maxDuration: number)
 	return `${position * 100}%`
 }
 
-// TODO: This should use RundownTimingConsumer
-export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
-	filter: (data) => data.partPlayed?.[props.partInstanceTimingId],
-	dataResolution: TimingDataResolution.High,
-	tickResolution: TimingTickResolution.High,
-}))(function OvertimeShadow({
+export function OvertimeShadow({
 	partInstanceTimingId,
-	timingDurations,
 	timelineBase,
 	mainSourceEnd,
 	endsInFreeze,
@@ -45,7 +34,12 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	isPartZeroBudget,
 	isLive,
 	hasAlreadyPlayed,
-}: WithTiming<IProps>) {
+}: IProps): JSX.Element {
+	const timingDurations = useTiming(
+		TimingTickResolution.High,
+		TimingDataResolution.High,
+		(data) => data.partPlayed?.[partInstanceTimingId]
+	)
 	const livePosition = timingDurations.partPlayed?.[partInstanceTimingId] ?? 0
 
 	const contentVsPartDiff = mainSourceEnd - partRenderedDuration
@@ -167,4 +161,4 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 			)}
 		</>
 	)
-})
+}

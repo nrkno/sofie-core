@@ -31,7 +31,7 @@ import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider.js'
-import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming.js'
+import { useTiming } from './RundownView/RundownTiming/withTiming.js'
 import { CurrentPartOrSegmentRemaining } from './RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'
 import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus.js'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer.js'
@@ -185,14 +185,15 @@ interface ITimingDisplayProps {
 	layout: RundownLayoutRundownHeader | undefined
 }
 
-const TimingDisplay = withTiming<ITimingDisplayProps, {}>()(function TimingDisplay({
+function TimingDisplay({
 	rundownPlaylist,
 	currentRundown,
 	rundownCount,
 	layout,
-	timingDurations,
-}: WithTiming<ITimingDisplayProps>): JSX.Element | null {
+}: ITimingDisplayProps): JSX.Element | null {
 	const { t } = useTranslation()
+
+	const timingDurations = useTiming()
 
 	if (!rundownPlaylist) return null
 
@@ -257,7 +258,7 @@ const TimingDisplay = withTiming<ITimingDisplayProps, {}>()(function TimingDispl
 			</div>
 		</div>
 	)
-})
+}
 
 interface IRundownHeaderProps {
 	playlist: DBRundownPlaylist
