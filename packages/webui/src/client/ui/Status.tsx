@@ -12,6 +12,7 @@ import { MediaStatus } from './Status/media-status/index.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
+import Container from 'react-bootstrap/esm/Container'
 
 function StatusMenu(): JSX.Element {
 	const { t } = useTranslation()
@@ -71,7 +72,7 @@ export default function Status(): JSX.Element {
 	useSubscription(CorelibPubSub.showStyleVariants, null, null)
 
 	return (
-		<>
+		<Container fluid className="header-clear">
 			<div className="mt-5 mx-5 has-statusbar">
 				<Row>
 					<Col xs={12} sm={4} md={3} lg={2}>
@@ -92,6 +93,6 @@ export default function Status(): JSX.Element {
 					</Col>
 				</Row>
 			</div>
-		</>
+		</Container>
 	)
 }

@@ -9,6 +9,7 @@ import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
+import Container from 'react-bootstrap/esm/Container'
 
 function StatusMenu() {
 	const { t } = useTranslation()
@@ -54,25 +55,27 @@ export default function Status(): JSX.Element {
 	useSubscription(CorelibPubSub.showStyleVariants, null, null)
 
 	return (
-		<div className="mt-5 mx-5 has-statusbar">
-			<Row>
-				<Col xs={12} sm={4} md={3} lg={2}>
-					<StatusMenu />
-				</Col>
-				<Col xs={12} sm={8} md={9} lg={10}>
-					<Switch>
-						<Route path="/testTools/timeline/:studioId" component={TimelineView} />
-						<Route path="/testTools/timeline" component={TimelineStudioSelect} />
-						<Route path="/testTools/mappings/:studioId" component={MappingsView} />
-						<Route path="/testTools/mappings" component={MappingsStudioSelect} />
-						<Route path="/testTools/timelinedatastore/:studioId" component={TimelineDatastoreView} />
-						<Route path="/testTools/timelinedatastore" component={TimelineDatastoreStudioSelect} />
-						<Route path="/testTools/devicetriggers/:peripheralDeviceId" component={DeviceTriggersView} />
-						<Route path="/testTools/devicetriggers" component={DeviceTriggersDeviceSelect} />{' '}
-						<Redirect to="/testTools/timeline" />
-					</Switch>
-				</Col>
-			</Row>
-		</div>
+		<Container fluid className="header-clear">
+			<div className="mt-5 mx-5 has-statusbar">
+				<Row>
+					<Col xs={12} sm={4} md={3} lg={2}>
+						<StatusMenu />
+					</Col>
+					<Col xs={12} sm={8} md={9} lg={10}>
+						<Switch>
+							<Route path="/testTools/timeline/:studioId" component={TimelineView} />
+							<Route path="/testTools/timeline" component={TimelineStudioSelect} />
+							<Route path="/testTools/mappings/:studioId" component={MappingsView} />
+							<Route path="/testTools/mappings" component={MappingsStudioSelect} />
+							<Route path="/testTools/timelinedatastore/:studioId" component={TimelineDatastoreView} />
+							<Route path="/testTools/timelinedatastore" component={TimelineDatastoreStudioSelect} />
+							<Route path="/testTools/devicetriggers/:peripheralDeviceId" component={DeviceTriggersView} />
+							<Route path="/testTools/devicetriggers" component={DeviceTriggersDeviceSelect} />{' '}
+							<Redirect to="/testTools/timeline" />
+						</Switch>
+					</Col>
+				</Row>
+			</div>
+		</Container>
 	)
 }
