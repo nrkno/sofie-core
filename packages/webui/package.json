@@ -78,7 +78,6 @@
 		"react-popper": "^2.3.0",
 		"react-router-bootstrap": "^0.25.0",
 		"react-router-dom": "^5.3.4",
-		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.6.3",
 		"sha.js": "^2.4.11",
 		"shuttle-webhid": "^0.0.2",

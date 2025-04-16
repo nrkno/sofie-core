@@ -11,7 +11,6 @@ import {
 } from '../lib/ReactMeteorData/react-meteor-data.js'
 import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { useTranslation, withTranslation } from 'react-i18next'
-import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner.js'
 import ClassNames from 'classnames'
@@ -172,117 +171,13 @@ import { PropertiesPanel } from './UserEditOperations/PropertiesPanel.js'
 import { PreviewPopUpContextProvider } from './PreviewPopUp/PreviewPopUpContext.js'
 import Navbar from 'react-bootstrap/Navbar'
 import { AnimatePresence } from 'motion/react'
+import { WarningDisplay } from './RundownView/WarningDisplay.js'
 
 const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
 
 const DEFAULT_SEGMENT_VIEW_MODE = SegmentViewMode.Timeline
 
-interface ITimingWarningProps {
-	playlist: DBRundownPlaylist
-	inActiveRundownView?: boolean
-	studioMode: boolean
-	oneMinuteBeforeAction: (e: Event, noResetOnActivate: boolean) => void
-}
-
-interface ITimingWarningState {
-	plannedStartCloseShown?: boolean
-	plannedStartCloseShow?: boolean
-}
-const WarningDisplay = withTranslation()(
-	timer(5000)(
-		class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
-			constructor(props: Translated<ITimingWarningProps>) {
-				super(props)
-
-				this.state = {}
-			}
-
-			componentDidUpdate(prevProps: ITimingWarningProps) {
-				if (
-					(this.props.playlist.activationId && !prevProps.playlist.activationId && this.props.playlist.rehearsal) ||
-					this.props.playlist.rehearsal !== prevProps.playlist.rehearsal
-				) {
-					this.setState({
-						plannedStartCloseShown: false,
-					})
-				}
-
-				const expectedStart = PlaylistTiming.getExpectedStart(this.props.playlist.timing)
-				const expectedDuration = PlaylistTiming.getExpectedDuration(this.props.playlist.timing)
-
-				if (
-					this.props.playlist.activationId &&
-					this.props.playlist.rehearsal &&
-					expectedStart &&
-					// the expectedStart is near
-					getCurrentTime() + REHEARSAL_MARGIN > expectedStart &&
-					// but it's not horribly in the past
-					getCurrentTime() < expectedStart + (expectedDuration || 60 * 60 * 1000) &&
-					!this.props.inActiveRundownView &&
-					!this.state.plannedStartCloseShown
-				) {
-					this.setState({
-						plannedStartCloseShow: true,
-						plannedStartCloseShown: true,
-					})
-				}
-			}
-
-			discard = () => {
-				this.setState({
-					plannedStartCloseShow: false,
-				})
-			}
-
-			oneMinuteBeforeAction = (e: any, noResetOnActivate: boolean) => {
-				this.setState({
-					plannedStartCloseShow: false,
-				})
-
-				this.props.oneMinuteBeforeAction(e, noResetOnActivate)
-			}
-
-			render(): JSX.Element | null {
-				const { t } = this.props
-
-				if (!this.props.playlist) return null
-
-				return (
-					<ModalDialog
-						title={t('Start time is close')}
-						acceptText={t('Reset and Activate "On Air"')}
-						secondaryText={t('Cancel')}
-						actions={[
-							{
-								label: t('Activate "On Air"'),
-								classNames: 'btn-secondary',
-								on: (e) => {
-									this.oneMinuteBeforeAction(e as Event, true) // this one activates without resetting
-								},
-							},
-						]}
-						onAccept={(e) => this.oneMinuteBeforeAction(e as Event, false)}
-						onDiscard={this.discard}
-						onSecondary={this.discard}
-						show={
-							this.props.studioMode &&
-							this.state.plannedStartCloseShow &&
-							!(this.props.playlist.activationId && !this.props.playlist.rehearsal) &&
-							!!this.props.playlist.activationId
-						}
-					>
-						<p>
-							{t(
-								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to go into On-Air mode?'
-							)}
-						</p>
-					</ModalDialog>
-				)
-			}
-		}
-	)
-)
 interface ITimingDisplayProps {
 	rundownPlaylist: DBRundownPlaylist
 	currentRundown: Rundown | undefined
