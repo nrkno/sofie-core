@@ -6,6 +6,10 @@ import { getCurrentTime, systemTime } from './systemTime.js'
 import { logger } from './logging.js'
 import shajs from 'sha.js'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
+import RundownViewEventBus, {
+	RundownViewEventBusEvents,
+	RundownViewEvents,
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 
 export { multilineText, isEventInInputField }
 
@@ -236,4 +240,17 @@ export function hashSingleUseToken(token: string): string {
 		.update(SINGLE_USE_TOKEN_SALT + token)
 		.digest('base64')
 		.replace(/[+/=]/g, '_')
+}
+
+export function useRundownViewEventBusListener<TEvent extends RundownViewEvents>(
+	name: TEvent,
+	cb: (...args: RundownViewEventBusEvents[TEvent]) => void
+): void {
+	useEffect(() => {
+		// We need to force the cb type, typescript can't infer this through the generic
+		RundownViewEventBus.on(name, cb as any)
+		return () => {
+			RundownViewEventBus.off(name, cb as any)
+		}
+	}, [name, cb])
 }
