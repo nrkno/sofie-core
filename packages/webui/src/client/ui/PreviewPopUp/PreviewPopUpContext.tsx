@@ -170,9 +170,11 @@ export function convertSourceLayerItemToPreview(
 	) {
 		try {
 			const payload = JSONBlobParse<NoraPayload>(item.content.previewPayload)
-			const tableProps = Object.entries<unknown>(payload.content)
-				.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
-				.map(([key, value]) => ({ key, value }))
+			const tableProps = payload.content
+				? Object.entries<unknown>(payload.content)
+						.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
+						.map(([key, value]) => ({ key, value }))
+				: []
 
 			return {
 				contents: _.compact([

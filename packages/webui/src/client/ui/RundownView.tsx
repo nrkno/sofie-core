@@ -3157,6 +3157,26 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 													/>
 												</ErrorBoundary>
 												<ErrorBoundary>
+													<Shelf
+														buckets={this.props.buckets}
+														isExpanded={
+															this.state.isInspectorShelfExpanded ||
+															(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
+														}
+														onChangeExpanded={this.onShelfChangeExpanded}
+														hotkeys={this.defaultHotkeys(t)}
+														playlist={this.props.playlist}
+														showStyleBase={this.props.showStyleBase}
+														showStyleVariant={this.props.showStyleVariant}
+														studioMode={this.props.userPermissions.studio}
+														onChangeBottomMargin={this.onChangeBottomMargin}
+														rundownLayout={this.state.shelfLayout}
+														shelfDisplayOptions={this.props.shelfDisplayOptions}
+														bucketDisplayFilter={this.props.bucketDisplayFilter}
+														studio={this.props.studio}
+													/>
+												</ErrorBoundary>
+												<ErrorBoundary>
 													{this.props.userPermissions.studio && !Settings.disableBlurBorder && (
 														<KeyboardFocusIndicator userPermissions={this.props.userPermissions}>
 															<div
@@ -3291,26 +3311,6 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 												</ErrorBoundary>
 												<ErrorBoundary>
 													<PointerLockCursor />
-												</ErrorBoundary>
-												<ErrorBoundary>
-													<Shelf
-														buckets={this.props.buckets}
-														isExpanded={
-															this.state.isInspectorShelfExpanded ||
-															(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
-														}
-														onChangeExpanded={this.onShelfChangeExpanded}
-														hotkeys={this.defaultHotkeys(t)}
-														playlist={this.props.playlist}
-														showStyleBase={this.props.showStyleBase}
-														showStyleVariant={this.props.showStyleVariant}
-														studioMode={this.props.userPermissions.studio}
-														onChangeBottomMargin={this.onChangeBottomMargin}
-														rundownLayout={this.state.shelfLayout}
-														shelfDisplayOptions={this.props.shelfDisplayOptions}
-														bucketDisplayFilter={this.props.bucketDisplayFilter}
-														studio={this.props.studio}
-													/>
 												</ErrorBoundary>
 												<ErrorBoundary>
 													{this.props.playlist && this.props.studio && this.props.showStyleBase && (
