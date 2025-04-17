@@ -3,7 +3,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming.js'
+import { useTiming } from '../RundownView/RundownTiming/withTiming.js'
 import {
 	useSubscription,
 	useSubscriptions,
@@ -331,9 +331,7 @@ function useDirectorScreenSubscriptions(props: DirectorScreenProps): void {
 	])
 }
 
-function DirectorScreenWithSubscription(
-	props: WithTiming<DirectorScreenProps & DirectorScreenTrackedProps>
-): JSX.Element {
+function DirectorScreenWithSubscription(props: DirectorScreenProps & DirectorScreenTrackedProps): JSX.Element {
 	useDirectorScreenSubscriptions(props)
 
 	return <DirectorScreenRender {...props} />
@@ -347,13 +345,14 @@ function DirectorScreenRender({
 	playlistId,
 	currentPartInstance,
 	currentSegment,
-	timingDurations,
 	nextPartInstance,
 	nextSegment,
 	rundownIds,
-}: Readonly<WithTiming<DirectorScreenProps & DirectorScreenTrackedProps>>) {
+}: Readonly<DirectorScreenProps & DirectorScreenTrackedProps>) {
 	useSetDocumentClass('dark', 'xdark')
 	const { t } = useTranslation()
+
+	const timingDurations = useTiming()
 
 	if (playlist && playlistId && segments) {
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing) || 0
@@ -580,4 +579,4 @@ function DirectorScreenRender({
  */
 export const DirectorScreen = withTracker<DirectorScreenProps, {}, DirectorScreenTrackedProps>(
 	getDirectorScreenReactive
-)(withTiming<DirectorScreenProps & DirectorScreenTrackedProps, {}>()(DirectorScreenWithSubscription))
+)(DirectorScreenWithSubscription)

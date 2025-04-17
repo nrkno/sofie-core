@@ -6440,7 +6440,6 @@ __metadata:
     react-popper: "npm:^2.3.0"
     react-router-bootstrap: "npm:^0.25.0"
     react-router-dom: "npm:^5.3.4"
-    react-timer-hoc: "npm:^2.3.0"
     sass: "npm:^1.83.4"
     semver: "npm:^7.6.3"
     sha.js: "npm:^2.4.11"
@@ -16794,7 +16793,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"invariant@npm:^2.2.4, invariant@npm:~2.2.2":
+"invariant@npm:^2.2.4":
   version: 2.2.4
   resolution: "invariant@npm:2.2.4"
   dependencies:
@@ -24252,7 +24251,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.5.10, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.5.10, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -25058,18 +25057,6 @@ asn1@evs-broadcast/node-asn1:
   peerDependencies:
     react: ">=15"
   checksum: 10/99d54a99af6bc6d7cad2e5ea7eee9485b62a8b8e16a1182b18daa7fad7dafa5e526850eaeebff629848b297ae055a9cb5b4aba8760e81af8b903efc049d48f5c
-  languageName: node
-  linkType: hard
-
-"react-timer-hoc@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "react-timer-hoc@npm:2.3.0"
-  dependencies:
-    invariant: "npm:~2.2.2"
-    prop-types: "npm:^15.6.0"
-  peerDependencies:
-    react: ^15.0.0 || ^16.0.0
-  checksum: 10/caf5a75a81340344b05169d81cd48cbea833019c09c98767ef39d0e0961bbe3bfad1a0ea62d27450cc8971ec15cb4b44b001c76ed9b656f4a43da5dc20037abd
   languageName: node
   linkType: hard
 

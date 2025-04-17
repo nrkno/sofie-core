@@ -1,7 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
-import { withTiming, WithTiming } from './withTiming.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownUtils } from '../../../lib/rundown.js'
 import { getCurrentTime } from '../../../lib/systemTime.js'
@@ -15,12 +14,12 @@ interface IStartTimingProps {
 	plannedStartText?: string
 }
 
-export const PlaylistStartTiming = withTiming<IStartTimingProps, {}>()(function PlaylistStartTiming({
+export function PlaylistStartTiming({
 	rundownPlaylist,
 	hidePlannedStart,
 	hideDiff,
 	plannedStartText,
-}: WithTiming<IStartTimingProps>): JSX.Element {
+}: IStartTimingProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const playlistExpectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
@@ -74,4 +73,4 @@ export const PlaylistStartTiming = withTiming<IStartTimingProps, {}>()(function 
 			)}
 		</React.Fragment>
 	)
-})
+}

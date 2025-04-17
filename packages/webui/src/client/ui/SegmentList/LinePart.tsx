@@ -14,7 +14,7 @@ import { LinePartIdentifier } from './LinePartIdentifier.js'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators.js'
 import { LinePartTimeline } from './LinePartTimeline.js'
 import { LinePartTitle } from './LinePartTitle.js'
-import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownView/RundownTiming/withTiming.js'
+import { TimingDataResolution, TimingTickResolution, useTiming } from '../RundownView/RundownTiming/withTiming.js'
 import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming.js'
 import { LoopingIcon } from '../../lib/ui/icons/looping.js'
 
@@ -44,18 +44,7 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export const LinePart = withTiming<IProps, {}>((props: IProps) => {
-	return {
-		tickResolution: TimingTickResolution.Synced,
-		dataResolution: TimingDataResolution.High,
-		filter: (durations: RundownTimingContext) => {
-			durations = durations || {}
-
-			const timingId = getPartInstanceTimingId(props.part.instance)
-			return [(durations.partsInQuickLoop || {})[timingId]]
-		},
-	}
-})(function LinePart({
+export function LinePart({
 	part,
 	segment,
 	isNextPart,
@@ -66,13 +55,23 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 	indicatorColumns,
 	adLibIndicatorColumns,
 	isPlaylistLooping,
-	timingDurations,
 	isQuickLoopStart,
 	isQuickLoopEnd,
 	onContextMenu,
 	onPieceClick,
 	onPieceDoubleClick,
-}) {
+}: IProps): JSX.Element {
+	const timingDurations = useTiming(
+		TimingTickResolution.Synced,
+		TimingDataResolution.High,
+		(durations: RundownTimingContext) => {
+			durations = durations || {}
+
+			const timingId = getPartInstanceTimingId(part.instance)
+			return [(durations.partsInQuickLoop || {})[timingId]]
+		}
+	)
+
 	const isFinished =
 		(part.instance.timings?.reportedStoppedPlayback ?? part.instance.timings?.plannedStoppedPlayback) !== undefined
 	const [highlight] = useState(false)
@@ -202,4 +201,4 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 			/>
 		</ContextMenuTrigger>
 	)
-})
+}

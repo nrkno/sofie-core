@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-	TimingDataResolution,
-	TimingTickResolution,
-	WithTiming,
-	withTiming,
-} from '../RundownView/RundownTiming/withTiming.js'
+import { TimingDataResolution, TimingTickResolution, useTiming } from '../RundownView/RundownTiming/withTiming.js'
 import { SIMULATED_PLAYBACK_HARD_MARGIN } from '../SegmentTimeline/Constants.js'
 import { PartInstanceLimited } from '../../lib/RundownResolver.js'
 import { useTranslation } from 'react-i18next'
@@ -27,19 +22,15 @@ function timeToPosition(time: number, timelineBase: number, maxDuration: number)
 	return `${position * 100}%`
 }
 
-// TODO: This should use RundownTimingConsumer
-export const OnAirLine = withTiming<IProps, {}>({
-	filter: 'currentTime',
-	dataResolution: TimingDataResolution.High,
-	tickResolution: TimingTickResolution.High,
-})(function OnAirLine({
+export function OnAirLine({
 	partInstance,
-	timingDurations,
 	timelineBase,
 	maxDuration,
 	endsInFreeze,
 	mainSourceEnd,
-}: WithTiming<IProps>) {
+}: IProps): JSX.Element {
+	const timingDurations = useTiming(TimingTickResolution.High, TimingDataResolution.High, 'currentTime')
+
 	const [livePosition, setLivePosition] = useState(0)
 	const { t } = useTranslation()
 
@@ -117,4 +108,4 @@ export const OnAirLine = withTiming<IProps, {}>({
 			</div>
 		</>
 	)
-})
+}

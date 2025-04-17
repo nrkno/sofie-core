@@ -12,10 +12,7 @@ import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer.js'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode.js'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions.js'
 import { unprotectString } from '../../lib/tempLib.js'
-import RundownViewEventBus, {
-	RundownViewEvents,
-	HighlightEvent,
-} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
+import { RundownViewEvents, HighlightEvent } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames.js'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
@@ -28,6 +25,7 @@ import {
 	IPreviewPopUpSession,
 	PreviewPopUpContext,
 } from '../PreviewPopUp/PreviewPopUpContext.js'
+import { useRundownViewEventBusListener } from '../../lib/lib.js'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -146,10 +144,10 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 		},
 		[part, piece]
 	)
+
+	useRundownViewEventBusListener(RundownViewEvents.HIGHLIGHT, onHighlight)
 	useEffect(() => {
-		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, onHighlight)
 		return () => {
-			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, onHighlight)
 			clearTimeout(highlightTimeout.current)
 		}
 	}, [])
