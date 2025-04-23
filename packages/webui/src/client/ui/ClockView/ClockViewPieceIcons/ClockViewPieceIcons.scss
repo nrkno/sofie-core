@@ -81,8 +81,8 @@ $letter-spacing: 0.03em;
 	}
 
 	.live-speak {
-		--vt-color-light: color-mix(in srgb, var(--segment-layer-background-#{'vt'}) 90%, white);
-		--camera-color-light: color-mix(in srgb, var(--segment-layer-background-#{'camera'}) 90%, white);
+		--vt-color-light: #954c4c; 
+		--camera-color-light:  #4c954c;
 
 		background-image: linear-gradient(to bottom, var(--vt-color-light) 50%, var(--camera-color-light) 50%);
 		display: flex;
