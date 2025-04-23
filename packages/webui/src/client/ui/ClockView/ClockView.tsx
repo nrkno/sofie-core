@@ -44,7 +44,7 @@ export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.E
 						<DirectorScreen playlistId={playlist._id} studioId={studioId} />
 					</RundownTimingProvider>
 				) : (
-					<StudioScreenSaver studioId={studioId} ownBackground={true} />
+					<StudioScreenSaver studioId={studioId} ownBackground={true} screenName={t("Director's Screen")} />
 				)}
 			</Route>
 			<Route path="/countdowns/:studioId/overlay">
