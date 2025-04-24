@@ -60,7 +60,7 @@
 		"@sofie-automation/shared-lib": "1.51.6",
 		"debug": "^4.3.4",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "9.2.2-nightly-test-release51-20250415-125133-2085c7e1f.0",
+		"timeline-state-resolver": "9.2.2-nightly-fix-sofie-3889-stale-state-is-acted-upon-20250424-114936-f12b53eb4.0",
 		"tslib": "^2.6.2",
 		"underscore": "^1.13.6",
 		"winston": "^3.11.0"
