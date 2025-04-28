@@ -118,11 +118,19 @@ volumes:
 
 Create a `Sofie` folder, copy the above content, and save it as `docker-compose.yaml` within the `Sofie` folder.
 
-Navigate to the _ingest-gateway_ section of `docker-compose.yaml` and select which type of _ingest-gateway_ you'd like installed by uncommenting it. Save your changes. If you are using the [Rundown Editor](rundown-editor.md), then no ingest gateways need to be uncommented. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/intro.md) to see which _Ingest Gateway_ is best suited for _your_ production environment.
-
-Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just `docker-compose up` on Windows\).
-
 Once the installation is done, Sofie should be running on [http://localhost:3000](http://localhost:3000)
+
+You can now choose if you are using the [Rundown Editor](rundown-editor.md) or an _ingest-gateway_. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/intro.md) to see which _Ingest Gateway_ is best suited for _your_ production environment.
+
+Select the ingest gateway by creating using docker compose profiles. Create a file called `.env` in the same folder as docker compose with the contents:
+
+```
+COMPOSE_PROFILES=ingest-profile-name
+```
+
+But replacing `ingest-profile-name` with one of `spreadsheet-gateway`, `mos-gateway` or `inews-gateway`, or a comma separated list of more than one. For more information, see the [docker documentation on Compose profiles](https://docs.docker.com/compose/how-tos/profiles/).
+
+Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just `docker-compose up` on Windows or MacOS\).
 
 ### Tips for running in production
 
