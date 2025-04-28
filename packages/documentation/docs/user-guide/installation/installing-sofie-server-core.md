@@ -72,36 +72,39 @@ services:
   # If using the Rundown Editor, then none of the below images are needed.
   # The Rundown Editor can be found here: https://github.com/SuperFlyTV/sofie-automation-rundown-editor
 
-  # spreadsheet-gateway:
-  #   image: superflytv/sofie-spreadsheet-gateway:latest
-  #   restart: always
-  #   command: yarn start -host core -port 3000 -id spreadsheetGateway0
-  #   networks:
-  #     - sofie
-  #   depends_on:
-  #     - core
+  spreadsheet-gateway:
+    image: superflytv/sofie-spreadsheet-gateway:latest
+    restart: always
+    command: yarn start -host core -port 3000 -id spreadsheetGateway0
+    networks:
+      - sofie
+    depends_on:
+      - core
+    profiles: [spreadsheet-gateway]
 
-  # mos-gateway:
-  #   image: sofietv/tv-automation-mos-gateway:release51
-  #   restart: always
-  #   ports:
-  #     - "10540:10540" # MOS Lower port
-  #     - "10541:10541" # MOS Upper port
-  #     # - "10542:10542" # MOS query port - not used
-  #   command: yarn start -host core -port 3000 -id mosGateway0
-  #   networks:
-  #     - sofie
-  #   depends_on:
-  #     - core
+  mos-gateway:
+    image: sofietv/tv-automation-mos-gateway:release51
+    restart: always
+    ports:
+      - "10540:10540" # MOS Lower port
+      - "10541:10541" # MOS Upper port
+      # - "10542:10542" # MOS query port - not used
+    command: yarn start -host core -port 3000 -id mosGateway0
+    networks:
+      - sofie
+    depends_on:
+      - core
+    profiles: [mos-gateway]
 
-  # inews-gateway:
-  #   image: tv2media/inews-ftp-gateway:1.37.0-in-testing.20
-  #   restart: always
-  #   command: yarn start -host core -port 3000 -id inewsGateway0
-  #   networks:
-  #     - sofie
-  #   depends_on:
-  #     - core
+  inews-gateway:
+    image: tv2media/inews-ftp-gateway:1.37.0-in-testing.20
+    restart: always
+    command: yarn start -host core -port 3000 -id inewsGateway0
+    networks:
+      - sofie
+    depends_on:
+      - core
+    profiles: [inews-gateway]
 
 networks:
   sofie:
