@@ -27,7 +27,7 @@ To be able to facilitate various different kinds of show, Sofie&nbsp;Core has th
 - The **System** defines the whole of the Sofie&nbsp;Core
 - The **Organization** \(only available if user accounts are enabled\) defines things that are common for an organization. An organization consists of: **Users, Studios** and **ShowStyles**.
 - The **Studio** contains things that are related to the "hardware" or "rig". Technically, a Studio is defined as an entity that can have one \(or none\) rundown active at any given time. In most cases, this will be a representation of your gallery, with cameras, video playback and graphics systems, external inputs, sound mixers, lighting controls and so on. A single System can easily control multiple Studios.
-- The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\). Most importantly, the Show Style decides the "look and feel" of the Show towards the producer/director, dictating how data ingested from the NRCS will be interpreted and how the user will interact with the system during playback (see: [Show Style](../configuration/settings-view#show-style) in Settings).
+- The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\). Most importantly, the Show Style decides the "look and feel" of the Show towards the producer/director, dictating how data ingested from the NRCS will be interpreted and how the user will interact with the system during playback (see: [Show Style](configuration/settings-view#show-style) in Settings).
   - A **Show Style Variant** is a set of Show Style _Blueprint_ configuration values, that allows to use the same interaction model across multiple Shows with potentially different assets, changing the outward look of the Show: for example news programs with different hosts produced from the same Studio, but with different light setups, backscreen and overlay graphics.
 
 ![Sofie Architecture Venn Diagram](/img/docs/main/features/sofie-venn-diagram.png)
@@ -111,19 +111,19 @@ There are 3 types of blueprints, and all 3 must be uploaded into Sofie before th
 
 Handle things on the _System level_.  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L75](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L75)
+[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api/system.ts](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api/system.ts)
 
 ### Studio Blueprints
 
 Handle things on the _Studio level_, like "which showstyle to use for this rundown".  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L85](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L85)
+[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api/studio.ts](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api/studio.ts)
 
 ### Showstyle Blueprints
 
 Handle things on the _Showstyle level_, like generating [_Baseline_](#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117)
+[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api/showStyle.ts](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api/showStyle.ts)
 
 ## `PartInstances` and `PieceInstances`
 

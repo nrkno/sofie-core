@@ -7,5 +7,5 @@ The Google Spreadsheet Gateway, iNEWS Gateway, and the MOS \( [Media Object Serv
 ### Further Reading
 
 - [MOS Protocol Overview & Documentation](http://mosprotocol.com/)
-- [iNEWS on Avid's Website](https://www.avid.com/products/inews/how-to-buy)
+- [iNEWS on Avid's Website](https://www.avid.com/solutions/news-production)
 - [ENPS on The Associated Press' Website](https://workflow.ap.org/)
