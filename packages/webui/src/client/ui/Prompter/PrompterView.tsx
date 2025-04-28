@@ -369,10 +369,11 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 		this._lastAnimation = animate(window.scrollY, scrollToPosition, {
 			duration: 0.4,
 			ease: 'easeOut',
-			onUpdate: (latest: number) => window.scrollTo({
-				top: latest,
-				behavior: 'instant',
-			}),
+			onUpdate: (latest: number) =>
+				window.scrollTo({
+					top: latest,
+					behavior: 'instant',
+				}),
 		})
 	}
 	listAnchorPositions(startY: number, endY: number, sortDirection = 1): [number, Element][] {
