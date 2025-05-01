@@ -21,7 +21,7 @@ export default class SplitInputIcon extends React.Component<{
 				return (
 					<React.Fragment>
 						{label && label[1] ? label[1].substr(0, 1).toUpperCase() + ' ' : ''}
-						<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{label ? label[2] : ''}</tspan>
+						<tspan className="input-number">{label ? label[2] : ''}</tspan>
 					</React.Fragment>
 				)
 			} else {
@@ -72,17 +72,8 @@ export default class SplitInputIcon extends React.Component<{
 					className={classNames('piece-icon-bkg', 'lower', this.getRightSourceType(this.props.piece))}
 				/>
 				{!this.props.hideLabel && (
-					<text
-						x="63.25"
-						y="71.513954"
-						textAnchor="middle"
-						textLength="126.5"
-						className="piece-icon-text"
-						xmlSpace="preserve"
-					>
-						<tspan lengthAdjust="spacing" className="label">
-							{this.getCameraLabel(this.props.piece)}
-						</tspan>
+					<text x="63.25" y="71.513954" textAnchor="middle" className="piece-icon-text" xmlSpace="preserve">
+						<tspan className="label">{this.getCameraLabel(this.props.piece)}</tspan>
 					</text>
 				)}
 			</svg>

@@ -63,7 +63,7 @@
 }
 
 [data-bs-theme=dark] {
-	scrollbar-color: var(--org-color-shade-3) var(--org-color-shade-1);
+	scrollbar-color: var(--ui-dark-color-brighter) var(--ui-dark-color);
 
 	.btn.btn-secondary {
 		--bs-btn-border-color: transparent;
@@ -218,6 +218,16 @@ fieldset:disabled .btn::before {
 
 .modal-footer .btn {
 	min-width: 5em;
+}
+
+@media (max-width: 992px) {
+	.modal {
+		padding-top: 1em !important;
+	}
+
+	.modal-dialog-scrollable {
+		height: 80vh;
+	}
 }
 
 .card {

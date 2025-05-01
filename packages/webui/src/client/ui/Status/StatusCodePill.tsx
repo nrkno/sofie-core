@@ -29,7 +29,7 @@ export const StatusCodePill: React.FC<{
 	connected: boolean
 	statusCode: StatusCode
 	messages?: string[]
-}> = function ExpectedPackagesStatus(props) {
+}> = function StatusCodePill(props) {
 	const { t } = useTranslation()
 
 	function statusCodeString() {

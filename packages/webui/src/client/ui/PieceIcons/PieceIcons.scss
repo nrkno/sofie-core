@@ -26,6 +26,10 @@ $letter-spacing: 0.02em;
 			font-size: $font-size-base;
 			font-weight: 300;
 			letter-spacing: $letter-spacing;
+
+			.input-number {
+				font-weight: normal;
+			}
 		}
 	}
 }

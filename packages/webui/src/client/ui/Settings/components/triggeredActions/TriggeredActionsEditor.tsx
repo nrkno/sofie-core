@@ -99,21 +99,25 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	const systemTriggeredActionIds = useTracker(
 		() =>
 			TriggeredActions.find(
-				Object.assign(
-					{
-						showStyleBaseId: null,
-					},
-					parsedTriggerFilter
-						? {
-								triggers: {
-									$elemMatch: {
-										type: TriggerType.hotkey,
-										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
+				parsedTriggerFilter
+					? {
+							$or: [
+								{
+									triggersWithOverrides: {
+										defaults: {
+											0: {
+												type: TriggerType.hotkey,
+												keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
+											},
+										},
 									},
+									showStyleBaseId: null,
 								},
-							}
-						: undefined
-				),
+							],
+						}
+					: {
+							showStyleBaseId: null,
+						},
 				{
 					sort: {
 						_rank: 1,
@@ -128,21 +132,25 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	const showTriggeredActionIds = useTracker(
 		() =>
 			TriggeredActions.find(
-				Object.assign(
-					{
-						showStyleBaseId: showStyleBaseId,
-					},
-					parsedTriggerFilter
-						? {
-								triggers: {
-									$elemMatch: {
-										type: TriggerType.hotkey,
-										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
+				parsedTriggerFilter
+					? {
+							$or: [
+								{
+									triggersWithOverrides: {
+										defaults: {
+											0: {
+												type: TriggerType.hotkey,
+												keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
+											},
+										},
 									},
+									showStyleBaseId,
 								},
-							}
-						: undefined
-				),
+							],
+						}
+					: {
+							showStyleBaseId,
+						},
 				{
 					sort: {
 						_rank: 1,
