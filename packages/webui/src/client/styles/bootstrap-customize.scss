@@ -265,6 +265,7 @@ fieldset:disabled .btn::before {
 	vertical-align: -0.35rem;
 }
 
-.btn .svg-inline--fa + span {
+.btn .svg-inline--fa + span,
+.btn span + .svg-inline--fa {
 	margin-inline-start: calc(var(--bs-btn-padding-x, 0.5em) / 2);
 }

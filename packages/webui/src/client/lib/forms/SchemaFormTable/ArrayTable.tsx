@@ -163,8 +163,7 @@ export const SchemaFormArrayTable = ({
 				&nbsp;
 				{item.defaults && (
 					<button className="btn btn-primary" onClick={resyncTable} title="Reset to default" disabled={!isOverridden}>
-						{t('Reset')}
-						&nbsp;
+						<span>{t('Reset')}</span>
 						<FontAwesomeIcon icon={faSync} />
 					</button>
 				)}

@@ -111,8 +111,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 						)}
 					</span>
 					<Button variant="primary" onClick={clearOverride} title="Reset to default" disabled={!isOverridden}>
-						{t('Reset')}
-						&nbsp;
+						<span>{t('Reset')}</span>
 						<FontAwesomeIcon icon={faSync} />
 					</Button>
 				</>

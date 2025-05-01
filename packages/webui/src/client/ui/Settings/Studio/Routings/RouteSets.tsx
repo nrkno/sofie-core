@@ -370,8 +370,7 @@ function RouteSetRow({
 									title="Reset to default"
 									disabled={!routesIsOverridden}
 								>
-									{t('Reset')}
-									&nbsp;
+									<span>{t('Reset')}</span>
 									<FontAwesomeIcon icon={faSync} />
 								</Button>
 							)}
@@ -389,8 +388,7 @@ function RouteSetRow({
 									title="Reset to default"
 									disabled={!abPlayerIsOverridden}
 								>
-									{t('Reset')}
-									&nbsp;
+									<span>{t('Reset')}</span>
 									<FontAwesomeIcon icon={faSync} />
 								</Button>
 							)}
