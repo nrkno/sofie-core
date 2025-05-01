@@ -422,9 +422,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					</Button>
 				</Tooltip>
 				<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
-					<span className="inline-block">
+					<div className="d-inline-block">
 						<ImportTriggeredActionsButton showStyleBaseId={showStyleBaseId} />
-					</span>
+					</div>
 				</Tooltip>
 				<Tooltip overlay={t('Download Action Triggers')} placement="top">
 					<Button variant="outline-secondary" className="mx-1" onClick={onDownloadActions}>

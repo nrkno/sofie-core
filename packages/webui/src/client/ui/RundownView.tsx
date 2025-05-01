@@ -1853,7 +1853,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 
 		componentDidMount(): void {
 			document.body.classList.add('dark', 'vertical-overflow-only')
-			document.body.setAttribute('data-bs-theme', 'dark')
+			document.documentElement.setAttribute('data-bs-theme', 'dark')
 
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
@@ -2119,7 +2119,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 
 		componentWillUnmount(): void {
 			document.body.classList.remove('dark', 'vertical-overflow-only')
-			document.body.removeAttribute('data-bs-theme')
+			document.documentElement.removeAttribute('data-bs-theme')
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 			documentTitle.set(null)
