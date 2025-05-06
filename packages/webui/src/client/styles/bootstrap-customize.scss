@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .btn,
 .nav-tabs .nav-link {
 	letter-spacing: 0.2px;
@@ -7,7 +9,7 @@
 	-webkit-font-smoothing: antialiased;
 	--color-dark-1: #{$dark-1};
 	--color-dark-2: #{$dark-2};
-	--color-dark-2-transparent: #{transparentize($dark-2, 0.5)};
+	--color-dark-2-transparent: #{color.scale($dark-2, $alpha: -50%)};
 	--color-primary-dark: #{$primary-dark};
 
 	--org-color-error: #e62421;
