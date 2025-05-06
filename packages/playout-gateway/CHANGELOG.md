@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.51.7](https://github.com/nrkno/sofie-core/compare/v1.51.6...v1.51.7) (2025-05-06)
+
+
+### Bug Fixes
+
+* update timeline-state-resolver to a test version ([fbe3a55](https://github.com/nrkno/sofie-core/commit/fbe3a556e6e98d7dc70b8995c65a5eeb2c9593f9))
+
+
+
+
+
 ## [1.51.6](https://github.com/nrkno/sofie-core/compare/v1.51.5...v1.51.6) (2025-01-14)
 
 

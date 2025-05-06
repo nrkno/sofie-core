@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.51.7](///compare/v1.51.6...v1.51.7) (2025-05-06)
+
+
+### Features
+
+* **Shelf:** increase contrast on non-selected Shelf Tabs 5e64dce
+* **Shelf:** make the Shelf tabs narrower e0823da
+
+
+### Bug Fixes
+
+* Infinite Pieces are not de-nowified ebeb762
+* solution in b1045f99 was actually wrong, we should protect the Segment from being removed if it's nexted, it's going to be removed later 74136f1
+* update timeline-state-resolver to a test version fbe3a55
+* **updateNext:** do the flow for no nextPartInstance or oprhaned === 'deleted' first b480cc8
+
 ### [1.51.6](///compare/v1.51.5...v1.51.6) (2025-01-14)
 
 
