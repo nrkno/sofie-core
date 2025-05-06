@@ -100,7 +100,7 @@
 		"react-router-dom": "^5.3.4",
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.5.4",
-		"superfly-timeline": "9.0.2",
+		"superfly-timeline": "9.1.2",
 		"threadedclass": "^1.2.2",
 		"timecode": "0.0.4",
 		"type-fest": "^3.13.1",
