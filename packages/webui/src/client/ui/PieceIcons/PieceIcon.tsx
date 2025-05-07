@@ -50,7 +50,7 @@ export const PieceIcon = (props: {
 				const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
 				return (
 					<RemoteInputIcon
-						inputIndex={rmContent ? rmContent.studioLabelShort || rmContent.studioLabel : undefined}
+						inputNumber={rmContent ? rmContent.studioLabelShort || rmContent.studioLabel : undefined}
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)
@@ -62,7 +62,7 @@ export const PieceIcon = (props: {
 				const localContent = piece ? (piece.content as EvsContent | undefined) : undefined
 				return (
 					<LocalInputIcon
-						inputIndex={localContent ? localContent.studioLabelShort || localContent.studioLabel : undefined}
+						inputNumber={localContent ? localContent.studioLabelShort || localContent.studioLabel : undefined}
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)
@@ -75,7 +75,7 @@ export const PieceIcon = (props: {
 				const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
 				return (
 					<CamInputIcon
-						inputIndex={camContent ? camContent.studioLabelShort || camContent.studioLabel : undefined}
+						inputNumber={camContent ? camContent.studioLabelShort || camContent.studioLabel : undefined}
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)

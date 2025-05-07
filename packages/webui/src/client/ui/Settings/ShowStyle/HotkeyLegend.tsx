@@ -174,7 +174,7 @@ export const HotkeyLegendSettings = withTranslation()(
 
 						<Button variant="outline-secondary" className="mx-1" onClick={() => this.exportHotkeyJSON()}>
 							<FontAwesomeIcon icon={faDownload} />
-							&nbsp;{t('Export')}
+							<span>{t('Export')}</span>
 						</Button>
 						<ImportHotkeyLegendButton showStyleBaseId={this.props.showStyleBase._id} />
 					</div>
@@ -235,7 +235,7 @@ function ImportHotkeyLegendButton({ showStyleBaseId }: { showStyleBaseId: ShowSt
 			onUploadError={importError}
 		>
 			<FontAwesomeIcon icon={faUpload} />
-			&nbsp;{t('Import')}
+			<span>{t('Import')}</span>
 		</UploadButton>
 	)
 }

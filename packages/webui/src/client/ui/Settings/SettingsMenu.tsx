@@ -23,7 +23,7 @@ export function SettingsMenu(): JSX.Element {
 	const { t } = useTranslation()
 
 	return (
-		<div className="tight-xs htight-xs text-s">
+		<div className="tight-xs htight-xs">
 			<SettingsMenuStudios />
 
 			<SettingsMenuShowStyles />
@@ -446,10 +446,10 @@ function SettingsMenuBlueprint({ blueprint }: Readonly<SettingsMenuBlueprintProp
 					</div>
 				</div>
 
-				<p>
+				<p className="text-s">
 					{t('Type')} {(blueprint.blueprintType ?? '').toUpperCase()}
 				</p>
-				<p>
+				<p className="text-s">
 					{t('Version')} {blueprint.blueprintVersion}
 				</p>
 			</NavLink>

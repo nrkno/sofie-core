@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .status-bar {
 	position: fixed;
 	display: flex;
@@ -42,7 +44,7 @@
 		position: relative;
 		display: block;
 		border: none;
-		background: transparentize(#fff, 1);
+		background: color.scale(#fff, $alpha: -100%);
 		width: $fullscreen-controls__button--radius;
 		height: $fullscreen-controls__button--radius;
 		border-radius: 100%;
@@ -79,7 +81,7 @@
 			right: 0;
 			width: $fullscreen-controls__button--radius;
 			height: $fullscreen-controls__button--radius;
-			background: transparentize(#4b4b4b, 0.45);
+			background: color.scale(#4b4b4b, $alpha: -45%);
 			transition: 0.3s background-color;
 		}
 

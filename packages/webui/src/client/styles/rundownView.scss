@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @import 'utils';
 
 $output-layer-group-line: 1px solid #5c5c5c;
@@ -36,7 +38,7 @@ $previewline-color: rgb(38, 137, 186);
 $segment-timeline-padding: $segment-header-height 0 1.5em 2px;
 
 $segment-layer-height: 1.5em;
-$segment-layer-separator-color: transparentize(#000, 0.5);
+$segment-layer-separator-color: color.scale(#000, $alpha: -50%);
 
 :root {
 	--popdown: 2rem;
@@ -71,13 +73,13 @@ $break-width: 35rem;
 
 .segment-timeline-placeholder {
 	position: relative;
-	background: lighten($segment-background-color, 10%);
+	background: color.scale($segment-background-color, $lightness: 10%);
 	background-image: linear-gradient(
 		to right,
-		lighten($segment-background-color, 10%) 0%,
-		lighten($segment-background-color, 14%) 20%,
-		lighten($segment-background-color, 10%) 40%,
-		lighten($segment-background-color, 10%) 100%
+		color.scale($segment-background-color, $lightness: 10%) 0%,
+		color.scale($segment-background-color, $lightness: 14%) 20%,
+		color.scale($segment-background-color, $lightness: 10%) 40%,
+		color.scale($segment-background-color, $lightness: 10%) 100%
 	);
 	background-repeat: repeat-y;
 	background-size: 800px 1px;
@@ -95,7 +97,7 @@ $break-width: 35rem;
 		width: $segment-header-width;
 		left: 0;
 		bottom: 0;
-		background: lighten($segment-title-background-color, 70%);
+		background: color.scale($segment-title-background-color, $lightness: 70%);
 		opacity: 0.1;
 	}
 }
@@ -1593,8 +1595,8 @@ svg.icon {
 					-45deg,
 					transparent 0%,
 					transparent 8px,
-					darken($part-start-color, 50%) 8px,
-					darken($part-start-color, 50%) 10px
+					color.scale($part-start-color, $lightness: -50%) 8px,
+					color.scale($part-start-color, $lightness: -50%) 10px
 				);
 				backdrop-filter: saturate(0%) brightness(50%);
 			}
@@ -3513,7 +3515,7 @@ svg.icon {
 .rundown-view--loading {
 	margin-top: 0;
 
-	> .mod.mhl.mvl.alc {
+	> div > .origo-spinner {
 		position: absolute;
 		top: 50%;
 		left: 50%;

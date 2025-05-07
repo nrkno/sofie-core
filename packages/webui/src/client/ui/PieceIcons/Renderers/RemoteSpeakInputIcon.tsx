@@ -9,7 +9,6 @@ export function RemoteSpeakInputIcon({ abbreviation }: { abbreviation?: string }
 			<text
 				x="5"
 				y="66.514"
-				textLength="116.5"
 				style={{
 					fill: '#ffffff',
 					fontFamily: 'open-sans',

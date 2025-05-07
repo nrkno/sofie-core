@@ -6,17 +6,8 @@ export function LiveSpeakInputIcon({ abbreviation }: { abbreviation?: string }):
 				<stop className="stop1" offset={0.5} />
 				<stop className="stop2" offset={0.5} />
 			</linearGradient>
-			<text
-				x="63.25"
-				y="71.513954"
-				textAnchor="middle"
-				textLength="126.5"
-				className="piece-icon-text"
-				xmlSpace="preserve"
-			>
-				<tspan lengthAdjust="spacing" className="label">
-					{abbreviation !== undefined ? abbreviation : 'LSK'}
-				</tspan>
+			<text x="63.25" y="71.513954" textAnchor="middle" className="piece-icon-text" xmlSpace="preserve">
+				<tspan className="label">{abbreviation !== undefined ? abbreviation : 'LSK'}</tspan>
 			</text>
 		</svg>
 	)

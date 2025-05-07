@@ -91,8 +91,8 @@ export function StudioPlayoutSubDevices({
 	}, [studioId, wrappedSubDevices])
 
 	return (
-		<div>
-			<h2 className="mb-4">
+		<div className="mb-4">
+			<h2 className="mb-2">
 				<Tooltip
 					overlay={t('Playout devices are needed to control your studio hardware')}
 					visible={getHelpMode() && !wrappedSubDevices.length}

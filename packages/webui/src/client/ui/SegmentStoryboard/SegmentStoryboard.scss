@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @import '../../styles/colorScheme';
 @import '../../styles/utils';
 @import '../../styles/variables';
@@ -633,8 +635,8 @@ $break-width: 35rem;
 			-45deg,
 			transparent 0%,
 			transparent 8px,
-			darken($part-start-color, 50%) 8px,
-			darken($part-start-color, 50%) 10px
+			color.scale($part-start-color, $lightness: -50%) 8px,
+			color.scale($part-start-color, $lightness: -50%) 10px
 		);
 		backdrop-filter: saturate(0%) brightness(50%);
 	}

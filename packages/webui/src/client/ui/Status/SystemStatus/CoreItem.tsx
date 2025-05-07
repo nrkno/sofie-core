@@ -48,7 +48,7 @@ export function CoreItem({ systemStatus, coreSystem }: ICoreItemProps): JSX.Elem
 										: undefined
 								}
 							>
-								{systemStatus && systemStatus.status}
+								{systemStatus?.status ?? t('Unknown')}
 							</a>
 						</span>
 					</div>
@@ -56,7 +56,9 @@ export function CoreItem({ systemStatus, coreSystem }: ICoreItemProps): JSX.Elem
 			</div>
 			<div className="device-item__id">
 				<div className="value">
-					{t('Sofie Automation Server Core: {{name}}', { name: coreSystem.name || 'unnamed' })}
+					{!coreSystem.name
+						? t('Sofie Automation Server Core')
+						: t('Sofie Automation Server Core: {{name}}', { name: coreSystem.name })}
 				</div>
 			</div>
 			<div className="device-item__version">

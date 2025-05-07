@@ -18,7 +18,7 @@ function StatusMenu(): JSX.Element {
 	const { t } = useTranslation()
 
 	return (
-		<div className="tight-xs htight-xs text-s">
+		<div className="tight-xs htight-xs">
 			<NavLink
 				activeClassName="selectable-selected"
 				className="status-menu__status-menu-item selectable clickable"

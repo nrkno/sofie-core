@@ -74,8 +74,8 @@ h5,
 
 .text-s {
 	font-size: 0.875rem;
-	font-family: Roboto, arial, sans-serif;
-	font-weight: 100;
+	font-weight: 400;
+    opacity: .7;
 	line-height: 1.5;
 	letter-spacing: 0.5px;
 }
@@ -124,7 +124,7 @@ header {
 .dimmed,
 :link .dimmed,
 :visited .dimmed {
-	color: #9f9f9f;
+	color: #737373;
 }
 
 .pill {
