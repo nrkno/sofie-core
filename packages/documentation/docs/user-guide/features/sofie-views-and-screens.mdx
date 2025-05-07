@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem'
 
 ## Definitions
 
-- A _**View**_ is definied as a particular layout of Sofie's main user interface.
+- A _**View**_ is defined as a particular layout of Sofie's main user interface.
   - A _**Mode**_ is one of several ways to configure a particular "View" of Sofie's main user interface.
   - A _**Panel**_ is defined as an expandable/collapsable area of Sofie's main user interface.
 - A _**Screen**_ is defined a layout intended to be used on an external display, in addition to with Sofie's main user interface.
@@ -24,7 +24,7 @@ All existing rundowns are listed in the _Lobby View_.
 
 ![Rundown View](/img/docs/main/features/active-rundown-example.png)
 
-The _Rundown View_ is the main view that the producer is working in.
+The _Rundown View_ is the main view that the producer works in.
 
 ![The Rundown View and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
@@ -79,9 +79,9 @@ In the top-right corner of the Segment, there's a button controlling the display
 
 The **_Storyboard_** mode is an alternative to the default **_Timeline_** mode. In Storyboard mode, the accurate placement in time of each Piece is not visualized, so that more Parts can be visualized at once in a single row. This can be particularly useful in Shows without very strict timing planning or where timing is not driven by the User, but rather some external factor; or in Shows where very long Parts are joined with very short ones: sports, events and debates. This mode also does not visualize the history of the playback: rather, it only shows what is currently On Air or is planned to go On Air.
 
-Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter Screen](#presenter-screen), and presents it with a larger, hover-scrub-enabled Piece for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
+Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter Screen](#presenter-screen), and presents it with a larger, hover-scrub-enabled Piece for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will disappear from the view.
 
-If no more Parts can be displayed in a given Segment, they are stacked in order on the right side of the Segment. The User can scroll through thse Parts by click-and-dragging the Storyboard area, or using the mouse wheel - `Alt`+Wheel, if only a vertical wheel is present in the mouse.
+If no more Parts can be displayed in a given Segment, they are stacked in order on the right side of the Segment. The User can scroll through these Parts by click-and-dragging the Storyboard area, or using the mouse wheel - `Alt`+Wheel, if only a vertical wheel is present in the mouse.
 
 #### List Mode
 
@@ -107,11 +107,11 @@ All user interactions work in the Storyboard and List View mode the same as in T
 
 <Tabs>
 <TabItem value="segment-time-budget" label="Left: Segment Time Budget" default>
-Clock on the left is an indicator of how much time has been spent playing Parts from that Segment in relation to how much time was planned for Parts in that Segment. If more time was spent playing than was planned for, this clock will turn red, there will be a **+** sign in front of it and will begin counting upwards.
+The clock on the left is an indicator of how much time has been spent playing Parts from that Segment in relation to how much time was planned for Parts in that Segment. If more time was spent playing than was planned for, this clock will turn red, there will be a **+** sign in front of it and will begin counting upwards.
 </TabItem>
 
 <TabItem value="segment-countdown" label="Right: Segment Countdown">
-Clock on the right is a countdown to the beginning of a given segment. This takes into account unplayed time in the On Air Part and all unplayed Parts between the On Air Part and a given Segment. If there are no unplayed Parts between the On Air Part and the Segment, this counter will disappear.
+The clock on the right is a countdown to the beginning of a given segment. This takes into account unplayed time in the On Air Part and all unplayed Parts between the On Air Part and a given Segment. If there are no unplayed Parts between the On Air Part and the Segment, this counter will disappear.
 </TabItem>
 </Tabs>
 
@@ -147,7 +147,7 @@ The _Rundown View_ and the _Detached Shelf View_ UI can have multiple concurrent
 2. select the first layout of any type,
 3. use the default layout \(no additional filters\), in the style of `RUNDOWN_LAYOUT`.
 
-To use a specific mode in these views, you can use the `?layout=...` query string, providing either the ID of the layout or a part of the name. This string will then be mached against all available layouts for the Show Style, and the first matching will be selected. For example, for a layout called `Stream Deck layout`, to open the currently active rundown's Detached Shelf use:
+To use a specific mode in these views, you can use the `?layout=...` query string, providing either the ID of the layout or a part of the name. This string will then be matched against all available layouts for the Show Style, and the first matching will be selected. For example, for a layout called `Stream Deck layout`, to open the currently active rundown's Detached Shelf use:
 
 `http://localhost:3000/activeRundown/studio0/shelf?layout=Stream`
 
@@ -214,7 +214,7 @@ The [Settings View](../configuration/settings-view.md) is only available to user
 
 ![Prompter Screen](/img/docs/main/features/prompter-example.png)
 
-A fullscreen page which displays the prompter text for the currently active rundown. The prompter can be controlled and configured in various ways, see more at the [Prompter](prompter.md) documentation. If no Rundown is active in a given studio, the [Screensaver](sofie-views.mdx#screensaver) will be displayed.
+A fullscreen page which displays the prompter text for the currently active rundown. The prompter can be controlled and configured in various ways, see more at the [Prompter](prompter.md) documentation. If no Rundown is active in a given studio, the [Screensaver](./sofie-views-and-screens.mdx#screensaver) will be displayed.
 
 ### Presenter Screen
 
@@ -222,7 +222,7 @@ A fullscreen page which displays the prompter text for the currently active rund
 
 ![Director View](/img/docs/main/features/director-screen-example.png)
 
-A fullscreen page, intended to be shown to the director. It displays countdown timers for the current and next items in the rundown. If no Rundown is active in a given studio, the [Screensaver](sofie-views.mdx#screensaver) will be shown.
+A fullscreen page, intended to be shown to the director. It displays countdown timers for the current and next items in the rundown. If no Rundown is active in a given studio, the [Screensaver](./sofie-views-and-screens.mdx#screensaver) will be shown.
 
 ## Presenter View
 
@@ -351,7 +351,7 @@ So **coreDuration + gatewayDuration** is the full time it took from beginning-of
 
 #### Action
 
-Describes what action the user did; e g pressed a key, clicked a button, or selected a meny item.
+Describes what action the user did; e g pressed a key, clicked a button, or selected a menu item.
 
 #### Method
 

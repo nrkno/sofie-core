@@ -11,8 +11,8 @@ The following pages are broken up by equipment type that is supported by Sofie's
 ## Playout & Recording
 
 - [CasparCG Graphics and Video Server](casparcg-server-installation.md) - _Graphics / Playout / Recording_
-- [Blackmagic Design's HyperDeck](https://www.blackmagicdesign.com/products/hyperdeckstudio) - _Recording_
-- [Quantel](http://www.quantel.com) Solutions - _Playout_
+- [Blackmagic Design's HyperDeck](https://www.blackmagicdesign.com/products/hyperdeckstudio) - _Recording_ 
+- Quantel Solutions - _Playout_ \( Now part of [Grass Valley Group](https://www.grassvalley.com/products/playout/) \)
 - [Vizrt](https://www.vizrt.com/) Graphics Solutions - _Graphics / Playout_
 
 ## Vision Mixers
