@@ -13,7 +13,7 @@ Blueprints are little plug-in programs that runs inside _Sofie_. They are the lo
 
 Blueprints are custom scripts that you can download or create yourself. There is a set of example Blueprints for the [Rundown Editor](https://github.com/SuperFlyTV/sofie-automation-rundown-editor) or the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway) available for use here: [https://github.com/SuperFlyTV/sofie-demo-blueprints](https://github.com/SuperFlyTV/sofie-demo-blueprints).
 
-To begin installing any Blueprint, navigate to the _Settings page_. (<http://localhost:3000/settings/?admin=1)[http://localhost:3000/settings/?admin=1>], otherwise see the [Sofie Access Level](../features/access-levels.md) page for assistance getting there.
+To begin installing any Blueprint, navigate to the _Settings page_. ( [http://localhost:3000/settings/?admin=1](http://localhost:3000/settings/?admin=1>) ), otherwise see the [Sofie Access Level](../features/access-levels.md) page for assistance getting there.
 
 ![The Settings Page](/img/docs/getting-started/settings-page.jpg)
 
