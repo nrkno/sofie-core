@@ -6255,7 +6255,7 @@ __metadata:
     type-fest: "npm:^4.33.0"
     underscore: "npm:^1.13.7"
   peerDependencies:
-    mongodb: ^5.5.0
+    mongodb: ^6.12.0
   languageName: unknown
   linkType: soft
 
@@ -6281,6 +6281,7 @@ __metadata:
     amqplib: "npm:^0.10.5"
     deepmerge: "npm:^4.3.1"
     elastic-apm-node: "npm:^4.11.0"
+    jest: "npm:^29.7.0"
     jest-mock-extended: "npm:^3.0.7"
     mongodb: "npm:^6.12.0"
     p-lazy: "npm:^3.1.0"
@@ -6289,6 +6290,7 @@ __metadata:
     threadedclass: "npm:^1.2.2"
     tslib: "npm:^2.8.1"
     type-fest: "npm:^4.33.0"
+    typescript: "npm:~5.7.3"
     underscore: "npm:^1.13.7"
   languageName: unknown
   linkType: soft
@@ -6323,7 +6325,7 @@ __metadata:
     underscore: "npm:^1.13.7"
   peerDependencies:
     i18next: ^21.10.0
-    mongodb: ^5.5.0
+    mongodb: ^6.12.0
   languageName: unknown
   linkType: soft
 
@@ -6332,6 +6334,7 @@ __metadata:
   resolution: "@sofie-automation/openapi@workspace:openapi"
   dependencies:
     "@openapitools/openapi-generator-cli": "npm:^2.16.3"
+    eslint: "npm:^9.18.0"
     eslint-plugin-yml: "npm:^1.16.0"
     js-yaml: "npm:^4.1.0"
     tslib: "npm:^2.8.1"
