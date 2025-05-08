@@ -6,17 +6,14 @@ import { IOutputLayerUi, SegmentUi } from '../SegmentContainer/withResolvedSegme
 import { StoryboardPartSecondaryPieces } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces.js'
 import { StoryboardPartThumbnail } from './StoryboardPartThumbnail/StoryboardPartThumbnail.js'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib.js'
+import { contextMenuHoldToDisplayTime, useRundownViewEventBusListener } from '../../lib/lib.js'
 import { getElementDocumentOffset } from '../../utils/positions.js'
 import { IContextMenuContext } from '../RundownView.js'
 import { literal } from '../../lib/tempLib.js'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart.js'
 import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'
 import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage.js'
-import RundownViewEventBus, {
-	HighlightEvent,
-	RundownViewEvents,
-} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
+import { HighlightEvent, RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions.js'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration.js'
@@ -130,13 +127,8 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 			if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
 		}
 	}, [])
-	useEffect(() => {
-		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, onHighlight)
 
-		return () => {
-			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, onHighlight)
-		}
-	}, [onHighlight])
+	useRundownViewEventBusListener(RundownViewEvents.HIGHLIGHT, onHighlight)
 
 	const isInvalid = part.instance.part.invalid
 	const isFloated = part.instance.part.floated
