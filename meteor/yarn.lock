@@ -1184,7 +1184,7 @@ __metadata:
     type-fest: "npm:^4.33.0"
     underscore: "npm:^1.13.7"
   peerDependencies:
-    mongodb: ^5.5.0
+    mongodb: ^6.12.0
   languageName: node
   linkType: soft
 
@@ -1235,7 +1235,7 @@ __metadata:
     underscore: "npm:^1.13.7"
   peerDependencies:
     i18next: ^21.10.0
-    mongodb: ^5.5.0
+    mongodb: ^6.12.0
   languageName: node
   linkType: soft
 

@@ -19,7 +19,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { MongoAPI, MongoAPIMethods } from './mongo'
+import { MongoAPI, MongoAPIMethods } from './mongo.js'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export interface IMeteorCall {
