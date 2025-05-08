@@ -21,12 +21,7 @@ import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover.js'
 import { SegmentEnd } from '../../lib/ui/icons/segment.js'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus.js'
 import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming.js'
-import {
-	TimingDataResolution,
-	TimingTickResolution,
-	WithTiming,
-	withTiming,
-} from '../RundownView/RundownTiming/withTiming.js'
+import { TimingDataResolution, TimingTickResolution, useTiming } from '../RundownView/RundownTiming/withTiming.js'
 import { LoopingIcon } from '../../lib/ui/icons/looping.js'
 
 interface IProps {
@@ -52,18 +47,7 @@ interface IProps {
 	onHoverOver?: () => void
 	onHoverOut?: () => void
 }
-export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
-	return {
-		tickResolution: TimingTickResolution.Synced,
-		dataResolution: TimingDataResolution.High,
-		filter: (durations: RundownTimingContext) => {
-			durations = durations || {}
-
-			const timingId = getPartInstanceTimingId(props.part.instance)
-			return [(durations.partsInQuickLoop || {})[timingId]]
-		},
-	}
-})(function StoryboardPart({
+export function StoryboardPart({
 	className,
 	segment,
 	part,
@@ -81,14 +65,24 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 	subscriptionsReady,
 	displayLiveLineCounter,
 	style,
-	timingDurations,
 	onContextMenu,
 	onHoverOver,
 	onHoverOut,
-}: Readonly<WithTiming<IProps>>): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
+
+	const timingDurations = useTiming(
+		TimingTickResolution.Synced,
+		TimingDataResolution.High,
+		(durations: RundownTimingContext) => {
+			durations = durations || {}
+
+			const timingId = getPartInstanceTimingId(part.instance)
+			return [(durations.partsInQuickLoop || {})[timingId]]
+		}
+	)
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -300,4 +294,4 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 			{isQuickLoopEnd && <div className="segment-storyboard__part__quickloop-end" />}
 		</ContextMenuTrigger>
 	)
-})
+}
