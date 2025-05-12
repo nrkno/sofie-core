@@ -55,7 +55,7 @@
 	},
 	"peerDependencies": {
 		"i18next": "^21.10.0",
-		"mongodb": "^5.5.0"
+		"mongodb": "^6.12.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

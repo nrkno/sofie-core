@@ -363,7 +363,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady & ITrackedProps,
 
 		componentDidMount(): void {
 			document.body.classList.add('dark', 'vertical-overflow-only')
-			document.body.setAttribute('data-bs-theme', 'dark')
+			document.documentElement.setAttribute('data-bs-theme', 'dark')
 
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
@@ -590,7 +590,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady & ITrackedProps,
 
 		componentWillUnmount(): void {
 			document.body.classList.remove('dark', 'vertical-overflow-only')
-			document.body.removeAttribute('data-bs-theme')
+			document.documentElement.removeAttribute('data-bs-theme')
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 			documentTitle.set(null)
@@ -1350,6 +1350,21 @@ const RundownViewContent = translateWithTracker<IPropsWithReady & ITrackedProps,
 										/>
 									</ErrorBoundary>
 									<ErrorBoundary>
+										<Shelf
+											isExpanded={
+												this.state.isInspectorShelfExpanded ||
+												!!(!this.state.wasShelfResizedByUser && this.props.selectedShelfLayout?.openByDefault)
+											}
+											onChangeExpanded={this.onShelfChangeExpanded}
+											playlist={playlist}
+											showStyleBase={showStyleBase}
+											showStyleVariant={showStyleVariant}
+											onChangeBottomMargin={this.onChangeBottomMargin}
+											rundownLayout={this.props.selectedShelfLayout}
+											studio={studio}
+										/>
+									</ErrorBoundary>
+									<ErrorBoundary>
 										{this.props.userPermissions.studio && !Settings.disableBlurBorder && (
 											<KeyboardFocusIndicator userPermissions={this.props.userPermissions}>
 												<div
@@ -1478,21 +1493,6 @@ const RundownViewContent = translateWithTracker<IPropsWithReady & ITrackedProps,
 									</ErrorBoundary>
 									<ErrorBoundary>
 										<PointerLockCursor />
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<Shelf
-											isExpanded={
-												this.state.isInspectorShelfExpanded ||
-												!!(!this.state.wasShelfResizedByUser && this.props.selectedShelfLayout?.openByDefault)
-											}
-											onChangeExpanded={this.onShelfChangeExpanded}
-											playlist={playlist}
-											showStyleBase={showStyleBase}
-											showStyleVariant={showStyleVariant}
-											onChangeBottomMargin={this.onChangeBottomMargin}
-											rundownLayout={this.props.selectedShelfLayout}
-											studio={studio}
-										/>
 									</ErrorBoundary>
 									<ErrorBoundary>
 										{this.props.playlist && this.props.studio && this.props.showStyleBase && (

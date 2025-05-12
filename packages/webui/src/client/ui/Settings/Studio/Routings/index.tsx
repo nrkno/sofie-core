@@ -50,13 +50,13 @@ export function StudioRoutings({
 							'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
 						)}
 					</p>
-					<h3 className="my-4">{t('Exclusivity Groups')}</h3>
+					<h3 className="mb-2">{t('Exclusivity Groups')}</h3>
 					<ExclusivityGroupsTable
 						studio={studio}
 						routeSetsFromOverrides={routeSetsFromOverrides}
 						exclusivityGroupsFromOverrides={exclusivityGroupsFromOverrides}
 					/>
-					<h3 className="my-4">{t('Route Sets')}</h3>
+					<h3 className="mb-2 mt-4">{t('Route Sets')}</h3>
 					<RouteSetsTable
 						studio={studio}
 						routeSetsFromOverrides={routeSetsFromOverrides}

@@ -360,7 +360,7 @@ function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
 			</LabelAndOverridesForCheckbox>
 
 			<LabelAndOverridesForDropdown
-				label={t('Source Type')}
+				label={t('AutoNext in QuickLoop behavior')}
 				item={wrappedItem}
 				itemKey={'forceQuickLoopAutoNext'}
 				overrideHelper={overrideHelper}

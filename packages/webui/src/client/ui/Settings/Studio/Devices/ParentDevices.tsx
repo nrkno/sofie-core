@@ -101,8 +101,8 @@ export function StudioParentDevices({ studioId }: Readonly<StudioParentDevicesPr
 	const hasCurrentDevice = wrappedDeviceSettings.find((d) => d.type === 'normal')
 
 	return (
-		<div>
-			<h2 className="mb-4">
+		<div className="mb-4">
+			<h2 className="mb-2">
 				<Tooltip
 					overlay={t('No gateways are configured')}
 					visible={getHelpMode() && !hasCurrentDevice}

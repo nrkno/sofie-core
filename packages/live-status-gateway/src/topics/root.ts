@@ -71,12 +71,13 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 	}
 
 	addTopic(channel: string, topic: WebSocketTopic): void {
-		if (channel in SubscriptionName) this._topics.set(channel, topic)
+		if (Object.values<string>(SubscriptionName).includes(channel)) this._topics.set(channel, topic)
 	}
 
 	subscribe(ws: WebSocket, name: SubscriptionName, reqid: number): void {
 		const topic = this._topics.get(name)
-		const curUnsubscribed = topic && !topic.hasSubscriber(ws) && name in SubscriptionName
+		const curUnsubscribed =
+			topic && !topic.hasSubscriber(ws) && Object.values<string>(SubscriptionName).includes(name)
 		if (curUnsubscribed) {
 			this.sendMessage(
 				ws,
@@ -108,7 +109,7 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 
 	unsubscribe(ws: WebSocket, name: SubscriptionName, reqid: number): void {
 		const topic = this._topics.get(name)
-		const curSubscribed = topic && topic.hasSubscriber(ws) && name in SubscriptionName
+		const curSubscribed = topic && topic.hasSubscriber(ws) && Object.values<string>(SubscriptionName).includes(name)
 		if (curSubscribed) {
 			topic.removeSubscriber(ws)
 			this.sendMessage(

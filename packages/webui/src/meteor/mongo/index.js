@@ -659,8 +659,7 @@ Mongo.Collection.prototype._callMutatorMethod = function _callMutatorMethod(name
 		throwIfSelectorIsNotId(args[0], name)
 	}
 
-	const mutatorMethodName = '/' + this._name + '/' + name
-	return this._connection.apply(mutatorMethodName, args, {}, callback)
+	return this._connection.apply(`mongo.${name}`, [this._name, ...args], {}, callback)
 }
 
 function throwIfSelectorIsNotId(selector, methodName) {

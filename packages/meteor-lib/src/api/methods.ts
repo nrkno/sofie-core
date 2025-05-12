@@ -19,6 +19,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { MongoAPI, MongoAPIMethods } from './mongo.js'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export interface IMeteorCall {
@@ -39,6 +40,7 @@ export interface IMeteorCall {
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
 	system: SystemAPI
+	mongo: MongoAPI
 }
 
 export type MakeMeteorMethodCall = (name: string, args: any[], options?: { noRetry?: boolean }) => Promise<any>
@@ -81,5 +83,6 @@ export function MakeMeteorCall(makeMethodCall: MakeMeteorMethodCall): IMeteorCal
 		userAction: makeMethods(UserActionAPIMethods, ['storeRundownSnapshot']),
 		organization: makeMethods(OrganizationAPIMethods),
 		system: makeMethods(SystemAPIMethods),
+		mongo: makeMethods(MongoAPIMethods),
 	}
 }

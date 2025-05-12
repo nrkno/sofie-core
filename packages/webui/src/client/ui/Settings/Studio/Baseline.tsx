@@ -68,7 +68,7 @@ export function StudioBaselineStatus({ studioId }: Readonly<IStudioBaselineStatu
 				) : (
 					t('No')
 				)}
-				<Button variant="primary" className="ms-2" onClick={reloadBaseline}>
+				<Button variant="secondary" className="ms-2 btn-outline-secondary" onClick={reloadBaseline}>
 					{t('Reload Baseline')}
 				</Button>
 				{needsUpdate ? (

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { PreviewPopUp, PreviewPopUpHandle } from './PreviewPopUp.js'
 import { Padding, Placement } from '@popperjs/core'
 import { PreviewPopUpContent } from './PreviewPopUpContent.js'
@@ -170,13 +170,15 @@ export function convertSourceLayerItemToPreview(
 	) {
 		try {
 			const payload = JSONBlobParse<NoraPayload>(item.content.previewPayload)
-			const tableProps = Object.entries<unknown>(payload.content)
-				.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
-				.map(([key, value]) => ({ key, value }))
+			const tableProps = payload.content
+				? Object.entries<unknown>(payload.content)
+						.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
+						.map(([key, value]) => ({ key, value }))
+				: []
 
 			return {
 				contents: _.compact([
-					item.content.previewRenderer
+					item.content.previewRenderer && payload.template
 						? {
 								type: 'iframe',
 								href: item.content.previewRenderer,
@@ -218,7 +220,7 @@ export function convertSourceLayerItemToPreview(
 				options: { size: 'large' },
 			}
 		} catch (e) {
-			console.error(`Failed to generate preview PopUp payload:`, e, item.content.previewPayload)
+			console.error(`Failed to generate preview PopUp payload:`, e, item.content.previewPayload, item)
 
 			return {
 				contents: _.compact([
@@ -446,10 +448,6 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 			return handle
 		},
 	}
-
-	useEffect(() => {
-		console.log(previewSession)
-	}, [previewSession])
 
 	return (
 		<PreviewPopUpContext.Provider value={context}>

@@ -2,9 +2,21 @@
 
 // Variables
 $text-color: #ffffff;
-$font-size-base: 21em;
+$font-size-base: 19.5em;
 $text-shadow: 0 2px 9px rgba(0, 0, 0, 0.5);
 $letter-spacing: 0.03em;
+
+$background-live-speak: linear-gradient(
+	to bottom,
+	$segment-layer-background-live-speak-1 74%,
+	$segment-layer-background-live-speak-2 74%
+);
+
+$background-remote-speak: linear-gradient(
+	to bottom,
+	$segment-layer-background-remote-speak-1 74%,
+	$segment-layer-background-remote-speak-2 74%
+);
 
 @mixin layer-type-backgrounds {
 	@each $layer-type in $layer-types {
@@ -81,13 +93,17 @@ $letter-spacing: 0.03em;
 	}
 
 	.live-speak {
-		--vt-color-light: color-mix(in srgb, var(--segment-layer-background-#{'vt'}) 90%, white);
-		--camera-color-light: color-mix(in srgb, var(--segment-layer-background-#{'camera'}) 90%, white);
-
-		background-image: linear-gradient(to bottom, var(--vt-color-light) 50%, var(--camera-color-light) 50%);
+		background-image: $background-live-speak;
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+
+	.remote-speak {
+			background-image: $background-remote-speak;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 	}
 
 	// Split view container and layers

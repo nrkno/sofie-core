@@ -381,7 +381,7 @@ function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<I
 	return (
 		<>
 			<Tooltip overlay={t('Import')} placement="top">
-				<span className="inline-block">
+				<div className="d-inline-block">
 					<UploadButton
 						className="btn btn-secondary"
 						onUploadContents={importTable}
@@ -390,7 +390,7 @@ function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<I
 					>
 						<FontAwesomeIcon icon={faUpload} />
 					</UploadButton>
-				</span>
+				</div>
 			</Tooltip>
 
 			<Tooltip overlay={t('Export')} placement="top">

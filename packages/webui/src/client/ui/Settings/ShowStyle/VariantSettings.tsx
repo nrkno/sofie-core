@@ -300,7 +300,7 @@ export const ShowStyleVariantsSettings = ({
 				</Button>
 				<Button variant="outline-secondary" className="mx-1" onClick={onDownloadAllShowStyleVariants}>
 					<FontAwesomeIcon icon={faDownload} />
-					&nbsp;{t('Export')}
+					<span>{t('Export')}</span>
 				</Button>
 				<ImportVariantsButton localVariantCount={localVariants.length} />
 				<Button variant="outline-secondary" className="mx-1" onClick={onRemoveAllShowStyleVariants}>
@@ -366,7 +366,7 @@ function ImportVariantsButton({ localVariantCount }: { localVariantCount: number
 			onUploadContents={importShowStyleVariantsContents}
 		>
 			<FontAwesomeIcon icon={faUpload} />
-			&nbsp;{t('Import')}
+			<span>{t('Import')}</span>
 		</UploadButton>
 	)
 }

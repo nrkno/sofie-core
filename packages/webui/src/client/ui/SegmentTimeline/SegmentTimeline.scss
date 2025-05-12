@@ -124,6 +124,10 @@ $timeline-layer-height: 1em;
 	.segment-timeline__small-parts-flag__part {
 		flex: 0 0;
 		white-space: nowrap;
+
+		> .piece-icon {
+			height: 1.35em;
+		}
 	}
 }
 .segment-timeline__part {

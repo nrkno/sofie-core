@@ -347,11 +347,11 @@ function SystemManagementCleanup() {
 		<>
 			<h2 className="my-4">{t('Cleanup')}</h2>
 			<div>
-				<Button className="mx-1" onClick={cleanUpOldDatabaseIndexes}>
+				<Button onClick={cleanUpOldDatabaseIndexes} variant="secondary" className="me-1 btn-outline-secondary">
 					{t('Cleanup old database indexes')}
 				</Button>
 
-				<Button className="mx-1" onClick={localCheckForOldDataAndCleanUp}>
+				<Button onClick={localCheckForOldDataAndCleanUp} variant="secondary" className="me-1 btn-outline-secondary">
 					{t('Cleanup old data')}
 				</Button>
 			</div>
@@ -501,7 +501,9 @@ function SystemManagementHeapSnapshot() {
 						<Button onClick={onReset}>{t(`No`)}</Button>
 					</>
 				) : (
-					<Button onClick={onAreYouSure}>{t(`Take and Download Memory Heap Snapshot`)}</Button>
+					<Button onClick={onAreYouSure} variant="secondary" className="btn-outline-secondary">
+						{t(`Take and Download Memory Heap Snapshot`)}
+					</Button>
 				)}
 			</div>
 			<div>
