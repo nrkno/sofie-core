@@ -30,6 +30,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
 import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../../security/auth'
+import { blueprintsPerformDevelopmentMode } from './development'
 
 const PERMISSIONS_FOR_MANAGE_BLUEPRINTS: Array<keyof UserPermissions> = ['configure']
 
@@ -75,16 +76,21 @@ export async function removeBlueprint(methodContext: MethodContext, blueprintId:
 	removeSystemStatus('blueprintCompability_' + blueprintId)
 }
 
+export interface UploadBlueprintOptions {
+	blueprintName?: string
+	ignoreIdChange?: boolean
+	developmentMode?: boolean
+}
+
 export async function uploadBlueprint(
 	cred: RequestCredentials,
 	blueprintId: BlueprintId,
 	body: string,
-	blueprintName?: string,
-	ignoreIdChange?: boolean
+	options?: UploadBlueprintOptions
 ): Promise<Blueprint> {
 	check(blueprintId, String)
 	check(body, String)
-	check(blueprintName, Match.Maybe(String))
+	check(options?.blueprintName, Match.Maybe(String))
 
 	assertConnectionHasOneOfPermissions(cred, ...PERMISSIONS_FOR_MANAGE_BLUEPRINTS)
 
@@ -93,7 +99,7 @@ export async function uploadBlueprint(
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
 	const blueprint = await fetchBlueprintLight(blueprintId)
 
-	return innerUploadBlueprint(null, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
+	return innerUploadBlueprint(null, blueprint, blueprintId, body, options)
 }
 export async function uploadBlueprintAsset(cred: RequestCredentials, fileId: string, body: string): Promise<void> {
 	check(fileId, String)
@@ -124,27 +130,25 @@ export function retrieveBlueprintAsset(_cred: RequestCredentials, fileId: string
 export async function internalUploadBlueprint(
 	blueprintId: BlueprintId,
 	body: string,
-	blueprintName?: string,
-	ignoreIdChange?: boolean,
+	options?: UploadBlueprintOptions,
 	organizationId?: OrganizationId | null
 ): Promise<Blueprint> {
 	organizationId = organizationId || null
 	const blueprint = await fetchBlueprintLight(blueprintId)
 
-	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
+	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, options)
 }
 async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
 	blueprint: BlueprintLight | undefined,
 	blueprintId: BlueprintId,
 	body: string,
-	blueprintName?: string,
-	ignoreIdChange?: boolean
+	options?: UploadBlueprintOptions
 ): Promise<Blueprint> {
 	const newBlueprint: Blueprint = {
 		_id: blueprintId,
 		organizationId: organizationId,
-		name: blueprint ? blueprint.name : blueprintName || unprotectString(blueprintId),
+		name: blueprint ? blueprint.name : options?.blueprintName || unprotectString(blueprintId),
 		created: blueprint ? blueprint.created : getCurrentTime(),
 		code: body,
 		hasCode: !!body,
@@ -194,7 +198,7 @@ async function innerUploadBlueprint(
 		)
 	}
 	if (blueprint && blueprint.blueprintId && blueprint.blueprintId !== newBlueprint.blueprintId) {
-		if (ignoreIdChange) {
+		if (options?.ignoreIdChange) {
 			logger.warn(
 				`Replacing blueprint "${newBlueprint._id}" ("${blueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`
 			)
@@ -252,6 +256,11 @@ async function innerUploadBlueprint(
 		await syncConfigPresetsToShowStyles(newBlueprint)
 	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		await syncConfigPresetsToStudios(newBlueprint)
+	}
+
+	// If in development mode, auto-apply any config and perform live reloading
+	if (options?.developmentMode) {
+		await blueprintsPerformDevelopmentMode(newBlueprint)
 	}
 
 	return newBlueprint
