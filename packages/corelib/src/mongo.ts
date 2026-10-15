@@ -153,6 +153,18 @@ function mongoMatchesAnyOf(value: any, list: any[]): boolean {
 	if (equalsAnyMember(value)) return true
 	return Array.isArray(value) && value.some(equalsAnyMember)
 }
+/**
+ * MongoDB `$all` membership: matches when the field value deep-equals all listed values, OR (when the
+ * field is an array) when its elements contains all listed values. Uses deep equality so embedded
+ * documents and arrays compare by value, like MongoDB (and unlike a JS `indexOf`).
+ */
+function mongoMatchesAllOf(value: any, list: any[]): boolean {
+	if (list.length === 0) return false // When passed an empty array, $all matches no documents.
+
+	return Array.isArray(value)
+		? list.every((v) => value.some((member) => _.isEqual(v, member)))
+		: list.every((v) => _.isEqual(v, value))
+}
 
 /**
  * MongoDB `$regex`: matches string field values against the pattern, or (when the field is an array) any
@@ -247,6 +259,9 @@ function mongoMatchFieldOperators(oAttr: any, s: Record<string, any>, o: Record<
 				break
 			case '$in':
 				ok = mongoMatchesAnyOf(oAttr, value)
+				break
+			case '$all':
+				ok = mongoMatchesAllOf(oAttr, value)
 				break
 			case '$nin':
 				ok = !mongoMatchesAnyOf(oAttr, value)
