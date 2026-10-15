@@ -7,6 +7,7 @@ import { assertNever, clone, getHash } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
 import { ICoreSystemApplyConfigContext } from '@sofie-automation/blueprints-integration/dist/context/systemApplyConfigContext'
 import { DEFAULT_CORE_TRIGGERS } from './defaultSystemActionTriggers'
+import { isInProductionMode } from '../../lib'
 
 /**
  * This is almost identical to the one in the job-worker, but it is hard to share the implementation due to differing loggers
@@ -38,16 +39,25 @@ export class CommonContext implements ICommonContext {
 	}
 
 	logDebug(message: string): void {
-		logger.debug(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.debug(this.makeLogMessage(message))
 	}
 	logInfo(message: string): void {
-		logger.info(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.info(this.makeLogMessage(message))
 	}
 	logWarning(message: string): void {
-		logger.warn(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.warn(this.makeLogMessage(message))
 	}
 	logError(message: string): void {
-		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.error(this.makeLogMessage(message))
+	}
+	private makeLogMessage(message: string): string {
+		if (isInProductionMode()) {
+			// Log the context identifier in production mode
+			return `"${this._contextName}": "${message}"\n(${this._contextIdentifier})`
+		} else {
+			// Dont log the context identifier in dev mode, for cleaner logs
+			return `"${this._contextName}": "${message}"`
+		}
 	}
 	protected logNote(message: string, type: NoteSeverity): void {
 		if (type === NoteSeverity.ERROR) {

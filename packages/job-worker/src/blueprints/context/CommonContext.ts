@@ -1,6 +1,6 @@
 import { ICommonContext, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging.js'
-import { assertNever, getHash } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getHash, isInProductionMode } from '@sofie-automation/corelib/dist/lib'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -38,16 +38,25 @@ export class CommonContext implements ICommonContext {
 	}
 
 	logDebug(message: string): void {
-		logger.debug(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.debug(this.makeLogMessage(message))
 	}
 	logInfo(message: string): void {
-		logger.info(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.info(this.makeLogMessage(message))
 	}
 	logWarning(message: string): void {
-		logger.warn(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.warn(this.makeLogMessage(message))
 	}
 	logError(message: string): void {
-		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
+		logger.error(this.makeLogMessage(message))
+	}
+	private makeLogMessage(message: string): string {
+		if (isInProductionMode()) {
+			// Log the context identifier in production mode
+			return `"${this._contextName}": "${message}"\n(${this._contextIdentifier})`
+		} else {
+			// Dont log the context identifier in dev mode, for cleaner logs
+			return `"${this._contextName}": "${message}"`
+		}
 	}
 	protected logNote(message: string, type: NoteSeverity): void {
 		if (type === NoteSeverity.ERROR) {
