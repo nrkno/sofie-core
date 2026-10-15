@@ -149,7 +149,7 @@ The _Rundown View_ and the _Detached Shelf View_ UI can have multiple concurrent
 
 To use a specific mode in these views, you can use the `?layout=...` query string, providing either the ID of the layout or a part of the name. This string will then be matched against all available layouts for the Show Style, and the first matching will be selected. For example, for a layout called `Stream Deck layout`, to open the currently active rundown's Detached Shelf use:
 
-`http://localhost:3000/activeRundown/studio0/shelf?layout=Stream`
+`http://localhost:3000/studio/studio0/activeRundown/shelf?layout=Stream`
 
 The Detached Shelf Screen with a custom `DASHBOARD_LAYOUT` allows displaying the Shelf on an auxiliary touch screen, tablet or a Stream Deck device. A specialized Stream Deck view will be used if the view is opened on a device with hardware characteristics matching a Stream Deck device.
 
@@ -226,7 +226,7 @@ The Rundown View also has a panel that presents this information in the [context
 
 ### Available screens View
 
-`/countdowns/:studioId`
+`/studio/:studioId`
 
 The "Available screens" view provides a centralized location to discover and configure all available screens for a given studio. This page is particularly useful for setting up displays in a studio environment, as it allows you to:
 
@@ -265,7 +265,7 @@ The Configurable Screens section uses collapsible accordion panels that let you 
 Each configuration form generates a complete URL that can be copied or opened directly. This eliminates the need to manually construct query strings for complex screen configurations.
 
 :::tip
-Bookmark the "Available screens" view for your studio (e.g., `/countdowns/studio0`) for quick access when setting up displays or troubleshooting screen configurations.
+Bookmark the "Available screens" view for your studio (e.g., `/studio/studio0`) for quick access when setting up displays or troubleshooting screen configurations.
 :::
 
 ## Sofie Screens
@@ -274,7 +274,7 @@ All Screens support a `?fullscreen=1` query parameter. When this parameter is pr
 
 ### Prompter Screen
 
-`/prompter/:studioId`
+`/studio/:studioId/prompter`
 
 ![Prompter Screen](/img/docs/main/features/prompter-example.png)
 
@@ -282,7 +282,7 @@ A fullscreen page which displays the prompter text for the currently active rund
 
 ### Director Screen
 
-`/countdowns/:studioId/director`
+`/studio/:studioId/director`
 
 ![Director Screen](/img/docs/main/features/director-screen-example.png)
 
@@ -300,7 +300,7 @@ AB Channel Display only appears for Pieces that have `abSessions` defined and wh
 
 ### Presenter Screen
 
-`/countdowns/:studioId/presenter`
+`/studio/:studioId/presenter`
 
 ![Presenter Screen](/img/docs/main/features/presenter-screen-example.png)
 
@@ -314,7 +314,7 @@ This screen can be configured using query parameters:
 
 #### Presenter Screen Overlay
 
-`/countdowns/:studioId/overlay`
+`/studio/:studioId/overlay`
 
 ![Presenter Screen Overlay](/img/docs/main/features/presenter-screen-overlay-example.png)
 
@@ -322,7 +322,7 @@ A fullscreen page with transparent background, intended to be shown to the studi
 
 ### Camera Position Screen
 
-`/countdowns/:studioId/camera`
+`/studio/:studioId/camera`
 
 ![Camera Position Screen](/img/docs/main/features/camera-view.jpg)
 
@@ -337,11 +337,11 @@ This screen can be configured using query parameters:
 | `sourceLayerIds` | string | A comma-separated list of Source Layer IDs to be considered for display                                    | _(show all)_ |
 | `studioLabels`   | string | A comma-separated list of Studio Labels (Piece `.content.studioLabel` values) to be considered for display | _(show all)_ |
 
-Example: [http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1](http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1)
+Example: [http://127.0.0.1/studio/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1](http://127.0.0.1/studio/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1)
 
 ### Active Rundown Screen
 
-`/activeRundown/:studioId`
+`/studio/:studioId/activeRundown`
 
 ![Active Rundown Screen](/img/docs/main/features/active-rundown-example.png)
 
@@ -357,13 +357,13 @@ This screen can be configured using query parameters:
 
 Example (locked Active Rundown for a secondary monitor):
 
-`http://localhost:3000/activeRundown/studio0?lockView=1`
+`http://localhost:3000/studio/studio0/activeRundown?lockView=1`
 
 Other query parameters for the rundown view itself (such as `hideRundownHeader` and layout selection) can be combined with `lockView`. See [URL Query Parameters](../../for-developers/url-query-parameters.md).
 
 ### Active Rundown Shelf Screen
 
-`/activeRundown/:studioId/shelf`
+`/studio/:studioId/activeRundown/shelf`
 
 ![Active Rundown Shelf](/img/docs/main/features/active-rundown-shelf-example.png)
 
@@ -373,7 +373,7 @@ A shelf layout can be selected by modifying the query string, see [Shelf Layouts
 
 The `lockView` parameter described above also applies to this route. Example:
 
-`http://localhost:3000/activeRundown/studio0/shelf?lockView=1&layout=Stream`
+`http://localhost:3000/studio/studio0/activeRundown/shelf?lockView=1&layout=Stream`
 
 ### Specific Rundown Shelf Screen
 
@@ -383,7 +383,7 @@ Displays the Shelf in fullscreen for a rundown.
 
 ### Multiview Screen
 
-`/countdowns/:studioId/multiview`
+`/studio/:studioId/multiview`
 
 A fullscreen page that displays multiple studio screens simultaneously in a grid layout. This is useful for monitoring all screens at once on a single display. The Multiview Screen embeds the following screens:
 

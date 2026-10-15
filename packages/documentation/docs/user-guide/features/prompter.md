@@ -31,7 +31,7 @@ The Prompter Screen can be configured using query parameters:
 | `showoverunder` | 0 / 1  | The timer in the top-right of the prompter, showing the overtime/undertime of the current show.                                                                     | `1`     |
 | `debug`         | 0 / 1  | Whether to display a debug box showing controller input values and the calculated speed the prompter is currently scrolling at. Used to tweak speedMaps and ranges. | `0`     |
 
-Example: [http://127.0.0.1/prompter/studio0/?mode=mouse&followtake=0&fontsize=20](http://127.0.0.1/prompter/studio0/?mode=mouse&followtake=0&fontsize=20)
+Example: [http://127.0.0.1/studio/studio0/prompter?mode=mouse&followtake=0&fontsize=20](http://127.0.0.1/studio/studio0/prompter?mode=mouse&followtake=0&fontsize=20)
 
 ## Controlling the prompter
 

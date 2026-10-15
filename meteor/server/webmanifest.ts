@@ -61,7 +61,7 @@ function getShortcutsForStudio(
 					: t('Active Rundown')
 			),
 			icons: SOFIE_DEFAULT_ICONS,
-			url: getRootSubpath() + `/activeRundown/${studio._id}`,
+			url: getRootSubpath() + `/studio/${studio._id}/activeRundown`,
 		},
 		{
 			id: `${studio._id}_prompter`,
@@ -74,7 +74,7 @@ function getShortcutsForStudio(
 					: t('Prompter')
 			),
 			icons: SOFIE_DEFAULT_ICONS,
-			url: getRootSubpath() + `/prompter/${studio._id}`,
+			url: getRootSubpath() + `/studio/${studio._id}/prompter`,
 		},
 		{
 			id: `${studio._id}_countdowns`,
@@ -83,7 +83,7 @@ function getShortcutsForStudio(
 				multiStudio ? t('{{studioName}}: Presenter screen', { studioName: studio.name }) : t('Presenter screen')
 			),
 			icons: SOFIE_DEFAULT_ICONS,
-			url: getRootSubpath() + `/countdowns/${studio._id}/presenter`,
+			url: getRootSubpath() + `/studio/${studio._id}/presenter`,
 		},
 	]
 }
