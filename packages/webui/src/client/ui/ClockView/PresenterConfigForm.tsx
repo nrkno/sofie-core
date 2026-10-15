@@ -29,7 +29,7 @@ function generatePresenterUrl(studioId: StudioId, config: PresenterConfigState):
 	}
 
 	const queryString = params.toString()
-	return `/countdowns/${studioId}/presenter${queryString ? '?' + queryString : ''}`
+	return `/studio/${studioId}/presenter${queryString ? '?' + queryString : ''}`
 }
 
 export function PresenterConfigForm({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {

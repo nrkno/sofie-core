@@ -38,25 +38,25 @@ export function ClockViewIndex({ studioId }: Readonly<{ studioId: StudioId }>): 
 					<h2>{t('Quick Links')}</h2>
 					<ul>
 						<li>
-							<Link to={`/countdowns/${studioId}/director`}>{t('Director Screen')}</Link>
+							<Link to={`/studio/${studioId}/director`}>{t('Director Screen')}</Link>
 							{' ('}
-							<FullscreenLink to={`/countdowns/${studioId}/director`}>{t('fullscreen')}</FullscreenLink>
+							<FullscreenLink to={`/studio/${studioId}/director`}>{t('fullscreen')}</FullscreenLink>
 							{')'}
 						</li>
 						<li>
-							<Link to={`/countdowns/${studioId}/overlay`}>{t('Overlay Screen')}</Link>
+							<Link to={`/studio/${studioId}/overlay`}>{t('Overlay Screen')}</Link>
 							{' ('}
-							<FullscreenLink to={`/countdowns/${studioId}/overlay`}>{t('fullscreen')}</FullscreenLink>
+							<FullscreenLink to={`/studio/${studioId}/overlay`}>{t('fullscreen')}</FullscreenLink>
 							{')'}
 						</li>
 						<li>
-							<Link to={`/countdowns/${studioId}/multiview`}>{t('All Screens in a MultiViewer')}</Link>
+							<Link to={`/studio/${studioId}/multiview`}>{t('All Screens in a MultiViewer')}</Link>
 							{' ('}
-							<FullscreenLink to={`/countdowns/${studioId}/multiview`}>{t('fullscreen')}</FullscreenLink>
+							<FullscreenLink to={`/studio/${studioId}/multiview`}>{t('fullscreen')}</FullscreenLink>
 							{')'}
 						</li>
 						<li>
-							<Link to={`/activeRundown/${studioId}`}>{t('Active Rundown View')}</Link>
+							<Link to={`/studio/${studioId}/activeRundown`}>{t('Active Rundown View')}</Link>
 						</li>
 					</ul>
 

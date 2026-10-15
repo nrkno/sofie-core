@@ -213,7 +213,7 @@ function generatePrompterUrl(studioId: StudioId, config: PrompterConfigState): s
 	addControllerParams(params, config)
 
 	const queryString = params.toString()
-	return `/prompter/${studioId}${queryString ? '?' + queryString : ''}`
+	return `/studio/${studioId}/prompter${queryString ? '?' + queryString : ''}`
 }
 
 export function PrompterConfigForm({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {

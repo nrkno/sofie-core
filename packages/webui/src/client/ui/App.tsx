@@ -153,7 +153,8 @@ export const App: React.FC = function App() {
 					<ErrorBoundary>
 						<Switch>
 							<Route path="/rundown/:playlistId" component={NullComponent} />
-							{/* The ClockView index should show heders. Any pages inside should not */}
+							{/* The ClockView index (/studio/:studioId) should show headers. Any pages inside should not */}
+							<Route path="/studio/:studioId/:page" component={NullComponent} />
 							<Route path="/countdowns/:studioId/:page" component={NullComponent} />
 							<Route path="/activeRundown" component={NullComponent} />
 							<Route path="/prompter/:studioId" component={NullComponent} />
@@ -192,22 +193,83 @@ export const App: React.FC = function App() {
 								)}
 							/>
 							<Route
-								path="/activeRundown/:studioId"
+								path="/studio/:studioId/activeRundown"
 								render={(props) => (
 									<ActiveRundownView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
 								)}
 							/>
 							<Route
-								path="/prompter/:studioId"
+								path="/studio/:studioId/prompter"
 								render={(props) => (
 									<PrompterView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
 								)}
 							/>
 							{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
 							<Route
-								path="/countdowns/:studioId"
+								path="/studio/:studioId"
 								render={(props) => (
 									<ClockView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+								)}
+							/>
+							{/* Legacy URL aliases for backwards compatibility */}
+							<Route
+								exact
+								path="/activeRundown/:studioId/shelf"
+								render={(props) => (
+									<Redirect
+										to={{
+											pathname: `/studio/${props.match.params.studioId}/activeRundown/shelf`,
+											search: props.location.search,
+										}}
+									/>
+								)}
+							/>
+							<Route
+								exact
+								path="/activeRundown/:studioId"
+								render={(props) => (
+									<Redirect
+										to={{
+											pathname: `/studio/${props.match.params.studioId}/activeRundown`,
+											search: props.location.search,
+										}}
+									/>
+								)}
+							/>
+							<Route
+								exact
+								path="/prompter/:studioId"
+								render={(props) => (
+									<Redirect
+										to={{
+											pathname: `/studio/${props.match.params.studioId}/prompter`,
+											search: props.location.search,
+										}}
+									/>
+								)}
+							/>
+							<Route
+								exact
+								path="/countdowns/:studioId/:page"
+								render={(props) => (
+									<Redirect
+										to={{
+											pathname: `/studio/${props.match.params.studioId}/${props.match.params.page}`,
+											search: props.location.search,
+										}}
+									/>
+								)}
+							/>
+							<Route
+								exact
+								path="/countdowns/:studioId"
+								render={(props) => (
+									<Redirect
+										to={{
+											pathname: `/studio/${props.match.params.studioId}`,
+											search: props.location.search,
+										}}
+									/>
 								)}
 							/>
 							<Route path="/status" render={() => <Status />} />
@@ -221,6 +283,8 @@ export const App: React.FC = function App() {
 					<ErrorBoundary>
 						<Switch>
 							{/* Put views that should NOT have the Notification center here: */}
+							<Route path="/studio/:studioId/activeRundown" component={ConnectionStatusNotification} />
+							<Route path="/studio/:studioId" component={NullComponent} />
 							<Route path="/countdowns/:studioId" component={NullComponent} />
 							<Route path="/prompter/:studioId" component={NullComponent} />
 							<Route path="/" component={ConnectionStatusNotification} />
@@ -229,8 +293,8 @@ export const App: React.FC = function App() {
 					<ErrorBoundary>
 						<Switch>
 							{/* Screens that should show the fullscreen overlay prompt */}
-							<Route path="/countdowns/:studioId/:page" component={FullscreenOverlay} />
-							<Route path="/prompter/:studioId" component={FullscreenOverlay} />
+							<Route path="/studio/:studioId/activeRundown" component={NullComponent} />
+							<Route path="/studio/:studioId/:page" component={FullscreenOverlay} />
 							<Route path="/" component={NullComponent} />
 						</Switch>
 					</ErrorBoundary>

@@ -37,7 +37,7 @@ function generateCameraUrl(studioId: StudioId, config: CameraConfigState): strin
 	}
 
 	const queryString = params.toString()
-	return `/countdowns/${studioId}/camera${queryString ? '?' + queryString : ''}`
+	return `/studio/${studioId}/camera${queryString ? '?' + queryString : ''}`
 }
 
 export function CameraConfigForm({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {

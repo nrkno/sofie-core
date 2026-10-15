@@ -40,7 +40,7 @@ export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.E
 
 	return (
 		<Switch>
-			<Route exact path="/countdowns/:studioId/presenter">
+			<Route exact path="/studio/:studioId/presenter">
 				{playlist ? (
 					<RundownTimingProvider playlist={playlist} defaultDuration={defaultDisplayDuration}>
 						<PresenterScreen playlistId={playlist._id} studioId={studioId} />
@@ -49,7 +49,7 @@ export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.E
 					<StudioScreenSaver studioId={studioId} ownBackground={true} screenName={t('Presenter Screen')} />
 				)}
 			</Route>
-			<Route exact path="/countdowns/:studioId/director">
+			<Route exact path="/studio/:studioId/director">
 				{playlist ? (
 					<RundownTimingProvider playlist={playlist} defaultDuration={defaultDisplayDuration}>
 						<DirectorScreen playlistId={playlist._id} studioId={studioId} />
@@ -58,7 +58,7 @@ export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.E
 					<StudioScreenSaver studioId={studioId} ownBackground={true} screenName={t("Director's Screen")} />
 				)}
 			</Route>
-			<Route exact path="/countdowns/:studioId/overlay">
+			<Route exact path="/studio/:studioId/overlay">
 				{playlist ? (
 					<RundownTimingProvider playlist={playlist} defaultDuration={defaultDisplayDuration}>
 						<OverlayScreen playlistId={playlist._id} studioId={studioId} />
@@ -67,15 +67,15 @@ export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.E
 					<OverlayScreenSaver studioId={studioId} />
 				)}
 			</Route>
-			<Route exact path="/countdowns/:studioId/camera">
+			<Route exact path="/studio/:studioId/camera">
 				<RundownTimingProvider playlist={playlist} defaultDuration={defaultDisplayDuration}>
 					<CameraScreen playlist={playlist} studioId={studioId} />
 				</RundownTimingProvider>
 			</Route>
-			<Route exact path="/countdowns/:studioId/multiview">
+			<Route exact path="/studio/:studioId/multiview">
 				<MultiviewScreen studioId={studioId} />
 			</Route>
-			<Route exact path="/countdowns/:studioId">
+			<Route exact path="/studio/:studioId">
 				<ClockViewIndex studioId={studioId} />
 			</Route>
 			<Route path="*">

@@ -249,25 +249,25 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.RundownView,
 				title: t('Rundown View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts, t),
-				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownViewLayout=${layoutId}`,
+				navigationLink: (studioId, layoutId) => `/studio/${studioId}/activeRundown?rundownViewLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts, t),
-				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}/shelf?layout=${layoutId}`,
+				navigationLink: (studioId, layoutId) => `/studio/${studioId}/activeRundown/shelf?layout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: t('Mini Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts, t),
-				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?miniShelfLayout=${layoutId}`,
+				navigationLink: (studioId, layoutId) => `/studio/${studioId}/activeRundown?miniShelfLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.PresenterView,
 				title: t('Presenter View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts, t),
-				navigationLink: (studioId, layoutId) => `/countdowns/${studioId}/presenter?presenterLayout=${layoutId}`,
+				navigationLink: (studioId, layoutId) => `/studio/${studioId}/presenter?presenterLayout=${layoutId}`,
 			},
 		]
 	}
