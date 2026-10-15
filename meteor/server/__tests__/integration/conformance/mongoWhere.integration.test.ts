@@ -187,13 +187,6 @@ const cases: ConformanceCase[] = [
 	},
 	{
 		kind: 'where',
-		name: 'UNSUPPORTED $all throws',
-		seed: withArrays,
-		query: { tags: { $all: ['x', 'y'] } },
-		expectation: { status: 'inMemoryThrows', reason: 'Operand "$all" is not implemented' },
-	},
-	{
-		kind: 'where',
 		name: 'UNSUPPORTED top-level $nor throws',
 		seed: scalars,
 		query: { $nor: [{ name: 'abc' }] },

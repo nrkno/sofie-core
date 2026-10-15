@@ -3,25 +3,9 @@ import fs from 'fs'
 import path from 'path'
 import { logger } from './logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { isInTestMode, isInProductionMode, isInDevelopmentMode } from '@sofie-automation/corelib/dist/lib'
 
-/**
- * Whether we are running in unit tests.
- */
-export function isInTestMode(): boolean {
-	return !!process.env.JEST_WORKER_ID
-}
-
-/**
- * Whether we are running a production build.
- * Note: An unset `NODE_ENV` counts as development.
- */
-export function isInProductionMode(): boolean {
-	return process.env.NODE_ENV === 'production' && !isInTestMode()
-}
-
-export function isInDevelopmentMode(): boolean {
-	return !isInProductionMode() && !isInTestMode()
-}
+export { isInTestMode, isInProductionMode, isInDevelopmentMode }
 
 /** A description of the mode we are running in, and what it was derived from, for the startup logging. */
 export function describeRunMode(): string {

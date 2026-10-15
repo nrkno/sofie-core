@@ -454,3 +454,20 @@ export function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
 export function doSetsIntersect<T>(a: Set<T>, b: Set<T>): boolean {
 	return [...a].some((value) => b.has(value))
 }
+/**
+ * Whether we are running in unit tests.
+ */
+export function isInTestMode(): boolean {
+	return !!process.env.JEST_WORKER_ID
+}
+/**
+ * Whether we are running a production build.
+ * Note: An unset `NODE_ENV` counts as development.
+ */
+export function isInProductionMode(): boolean {
+	return process.env.NODE_ENV === 'production' && !isInTestMode()
+}
+
+export function isInDevelopmentMode(): boolean {
+	return !isInProductionMode() && !isInTestMode()
+}
