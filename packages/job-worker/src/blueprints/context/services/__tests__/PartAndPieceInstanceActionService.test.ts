@@ -15,9 +15,11 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { clone, getRandomId, literal, normalizeArrayToMapFunc, omit } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartInstanceId,
+	PieceInstanceId,
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
+	SegmentPlayoutId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupDefaultRundown, setupMockShowStyleCompound } from '../../../../__mocks__/presetCollections.js'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -84,11 +86,11 @@ describe('Test blueprint api context', () => {
 
 			// make into a partInstance
 			await context.mockCollections.PartInstances.insertOne({
-				_id: protectString(`${part._id}_instance`),
+				_id: protectString<PartInstanceId>(`${part._id}_instance`),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				playlistActivationId: activationId,
-				segmentPlayoutId: protectString(''),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				takeCount: i,
 				rehearsal: false,
 				part,
@@ -100,9 +102,9 @@ describe('Test blueprint api context', () => {
 			})
 			for (const p of pieces) {
 				await context.mockCollections.PieceInstances.insertOne({
-					_id: protectString(`${part._id}_piece_${p._id}`),
+					_id: protectString<PieceInstanceId>(`${part._id}_piece_${p._id}`),
 					rundownId: rundownId,
-					partInstanceId: protectString(`${part._id}_instance`),
+					partInstanceId: protectString<PartInstanceId>(`${part._id}_instance`),
 					playlistActivationId: activationId,
 					piece: p,
 				})
@@ -111,9 +113,9 @@ describe('Test blueprint api context', () => {
 			const count = ((i + 2) % 4) + 1 // Some consistent randomness
 			for (let o = 0; o < count; o++) {
 				await context.mockCollections.PieceInstances.insertOne({
-					_id: protectString(`${part._id}_piece${o}`),
+					_id: protectString<PieceInstanceId>(`${part._id}_piece${o}`),
 					rundownId: rundownId,
-					partInstanceId: protectString(`${part._id}_instance`),
+					partInstanceId: protectString<PartInstanceId>(`${part._id}_instance`),
 					playlistActivationId: activationId,
 					piece: {
 						_id: protectString(`${part._id}_piece_inner${o}`),
@@ -189,7 +191,7 @@ describe('Test blueprint api context', () => {
 	}> {
 		const context = setupDefaultJobEnvironment()
 
-		const playlistId: RundownPlaylistId = protectString('playlist0')
+		const playlistId: RundownPlaylistId = protectString<RundownPlaylistId>('playlist0')
 		const activationId: RundownPlaylistActivationId = getRandomId()
 
 		await context.mockCollections.RundownPlaylists.insertOne({
@@ -1973,7 +1975,7 @@ describe('Test blueprint api context', () => {
 					expect(insertSpy).toHaveBeenCalledTimes(1)
 
 					// check some properties not exposed to the blueprints
-					const newPieceInstance = playoutModel.findPieceInstance(protectString(newPieceInstanceId))
+					const newPieceInstance = playoutModel.findPieceInstance(protectString<PieceInstanceId>(newPieceInstanceId))
 						?.pieceInstance as PlayoutPieceInstanceModel
 					expect(newPieceInstance).toBeTruthy()
 					expect(newPieceInstance.pieceInstance.dynamicallyInserted).toBeTruthy()
@@ -2128,7 +2130,7 @@ describe('Test blueprint api context', () => {
 
 				// Create an infinite piece instance continued from previous part
 				const pieceInstance: PieceInstance = {
-					_id: protectString('piece_infinite'),
+					_id: protectString<PieceInstanceId>('piece_infinite'),
 					rundownId: currentPartInstance.partInstance.rundownId,
 					partInstanceId: currentPartInstance.partInstance._id,
 					playlistActivationId: currentPartInstance.partInstance.playlistActivationId,
@@ -2236,7 +2238,7 @@ describe('Test blueprint api context', () => {
 							expect(offset).toEqual(34)
 							filter = filter2
 
-							return [protectString('result1')]
+							return [protectString<PieceInstanceId>('result1')]
 						}
 					)
 
@@ -2295,7 +2297,7 @@ describe('Test blueprint api context', () => {
 							expect(offset).toEqual(34)
 							filter = filter2
 
-							return [protectString('result1')]
+							return [protectString<PieceInstanceId>('result1')]
 						}
 					)
 

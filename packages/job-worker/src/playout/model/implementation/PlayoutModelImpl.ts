@@ -8,6 +8,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	SegmentPlayoutId,
+	TimelineHash,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import {
@@ -380,7 +381,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	}
 
 	activatePlaylist(rehearsal: boolean): RundownPlaylistActivationId {
-		this.playlistImpl.activationId = getRandomId()
+		this.playlistImpl.activationId = getRandomId<RundownPlaylistActivationId>()
 		this.playlistImpl.rehearsal = rehearsal
 
 		this.#playlistHasChanged = true
@@ -446,7 +447,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				: getRandomId()
 
 		const newPartInstance: DBPartInstance = {
-			_id: getRandomId(),
+			_id: getRandomId<PartInstanceId>(),
 			rundownId: part.rundownId,
 			segmentId: part.segmentId,
 			playlistActivationId: currentPartInstance.partInstance.playlistActivationId,
@@ -487,7 +488,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		const segmentPlayoutId: SegmentPlayoutId =
 			currentPartInstance && nextPart.segmentId === currentPartInstance.partInstance.segmentId
 				? currentPartInstance.partInstance.segmentPlayoutId
-				: getRandomId()
+				: getRandomId<SegmentPlayoutId>()
 
 		const newPartInstance: DBPartInstance = {
 			_id: protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`),
@@ -534,11 +535,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (!activationId) throw new Error('Playlist is not active')
 
 		const newPartInstance: DBPartInstance = {
-			_id: getRandomId(),
+			_id: getRandomId<PartInstanceId>(),
 			rundownId: rundown.rundown._id,
 			segmentId: adlibTestingSegment.segment._id,
 			playlistActivationId: activationId,
-			segmentPlayoutId: getRandomId(),
+			segmentPlayoutId: getRandomId<SegmentPlayoutId>(),
 			takeCount: 1,
 			rehearsal: !!this.playlist.rehearsal,
 			orphaned: 'adlib-part',
@@ -743,7 +744,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		delete this.playlistImpl.trackedAbSessions
 		delete this.playlistImpl.queuedSegmentId
 
-		if (regenerateActivationId) this.playlistImpl.activationId = getRandomId()
+		if (regenerateActivationId) this.playlistImpl.activationId = getRandomId<RundownPlaylistActivationId>()
 
 		// reset quickloop if applicable:
 		if (this.playlist.quickLoop && !this.playlist.quickLoop.locked) {
@@ -941,7 +942,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	): ReadonlyDeep<TimelineComplete> {
 		this.timelineImpl = {
 			_id: this.context.studioId,
-			timelineHash: getRandomId(), // randomized on every timeline change
+			timelineHash: getRandomId<TimelineHash>(), // randomized on every timeline change
 			generated: getCurrentTime(),
 			timelineBlob: serializeTimelineBlob(timelineObjs),
 			generationVersions: generationVersions,

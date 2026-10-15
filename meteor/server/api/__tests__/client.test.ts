@@ -23,7 +23,7 @@ setLogLevel(LogLevel.INFO)
 const orgSetTimeout = setTimeout
 
 describe('ClientAPI', () => {
-	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
+	let mockDeviceId: PeripheralDeviceId = protectString<PeripheralDeviceId>('not set yet')
 	beforeAll(async () => {
 		const studio = await setupMockStudio()
 		const mockDevice = await setupMockPeripheralDevice(

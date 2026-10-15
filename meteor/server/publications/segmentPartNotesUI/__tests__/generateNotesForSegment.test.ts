@@ -1,5 +1,5 @@
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -19,7 +19,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
@@ -35,7 +35,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: SegmentOrphanedReason.DELETED,
@@ -70,7 +70,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: SegmentOrphanedReason.HIDDEN,
@@ -121,7 +121,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [
 				// Clone to avoid mutation issues
@@ -175,7 +175,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
@@ -267,7 +267,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: SegmentOrphanedReason.DELETED,
@@ -298,7 +298,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
@@ -328,7 +328,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
@@ -358,14 +358,14 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
 		}
 
 		const part0: Pick<DBPart, PartFields> = {
-			_id: protectString('part0'),
+			_id: protectString<PartId>('part0'),
 			_rank: 6,
 			segmentId: segment._id,
 			rundownId: segment.rundownId,
@@ -410,7 +410,7 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
@@ -432,7 +432,7 @@ describe('generateNotesForSegment', () => {
 		})
 
 		const part0: Pick<DBPart, PartFields> = {
-			_id: protectString('part0'),
+			_id: protectString<PartId>('part0'),
 			_rank: 6,
 			segmentId: segment._id,
 			rundownId: segment.rundownId,
@@ -494,14 +494,14 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
 		}
 
 		const partInstance0: Pick<DBPartInstance, PartInstanceFields> = {
-			_id: protectString('instance0'),
+			_id: protectString<PartInstanceId>('instance0'),
 			segmentId: segment._id,
 			rundownId: segment.rundownId,
 			orphaned: undefined,
@@ -511,7 +511,7 @@ describe('generateNotesForSegment', () => {
 				severity: NoteSeverity.ERROR,
 			},
 			part: {
-				_id: protectString('part0'),
+				_id: protectString<PartId>('part0'),
 				title: 'Test Part',
 			} as any,
 		}
@@ -548,14 +548,14 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
 		}
 
 		const partInstance0: Pick<DBPartInstance, PartInstanceFields> = {
-			_id: protectString('instance0'),
+			_id: protectString<PartInstanceId>('instance0'),
 			segmentId: segment._id,
 			rundownId: segment.rundownId,
 			orphaned: undefined,
@@ -565,7 +565,7 @@ describe('generateNotesForSegment', () => {
 				severity: NoteSeverity.ERROR,
 			},
 			part: {
-				_id: protectString('part0'),
+				_id: protectString<PartId>('part0'),
 				title: 'Test Part',
 			} as any,
 		}
@@ -581,21 +581,21 @@ describe('generateNotesForSegment', () => {
 		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
-			rundownId: protectString('rundown0'),
+			rundownId: protectString<RundownId>('rundown0'),
 			name: 'A segment',
 			notes: [],
 			orphaned: undefined,
 		}
 
 		const partInstance0: Pick<DBPartInstance, PartInstanceFields> = {
-			_id: protectString('instance0'),
+			_id: protectString<PartInstanceId>('instance0'),
 			segmentId: segment._id,
 			rundownId: segment.rundownId,
 			orphaned: undefined,
 			reset: false,
 			invalidReason: undefined,
 			part: {
-				_id: protectString('part0'),
+				_id: protectString<PartId>('part0'),
 				title: 'Test Part',
 			} as any,
 		}

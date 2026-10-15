@@ -1,4 +1,12 @@
-import { RundownId, RundownPlaylistId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	RundownId,
+	RundownPlaylistId,
+	PartInstanceId,
+	ShowStyleBaseId,
+	RundownPlaylistActivationId,
+	SegmentPlayoutId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -12,12 +20,13 @@ import { runJobWithPlayoutModel } from '../../playout/lock.js'
 
 jest.mock('../../playout/setNext')
 import { setNextPart } from '../../playout/setNext.js'
+
 type TsetNextPart = jest.MockedFunction<typeof setNextPart>
 const setNextPartMock = setNextPart as TsetNextPart
 setNextPartMock.mockImplementation(async () => Promise.resolve()) // Default mock
 
-const rundownId: RundownId = protectString('mock_ro')
-const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
+const rundownId: RundownId = protectString<RundownId>('mock_ro')
+const rundownPlaylistId: RundownPlaylistId = protectString<RundownPlaylistId>('mock_rpl')
 async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await context.mockCollections.RundownPlaylists.insertOne({
 		_id: rundownPlaylistId,
@@ -29,7 +38,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		currentPartInfo: null,
 		nextPartInfo: null,
 		previousPartsInfo: [],
-		activationId: protectString('active'),
+		activationId: protectString<RundownPlaylistActivationId>('active'),
 		timing: {
 			type: 'none' as any,
 		},
@@ -47,7 +56,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		externalId: 'mock_ro',
 		name: 'Mock',
 		studioId: context.studioId,
-		showStyleBaseId: protectString(''),
+		showStyleBaseId: protectString<ShowStyleBaseId>(''),
 		showStyleVariantId: protectString(''),
 		created: 0,
 		modified: 0,
@@ -102,15 +111,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	const rawInstances = [
 		// Segment 1
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance1'),
+			_id: protectString<PartInstanceId>('mock_part_instance1'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part1'),
+				_id: protectString<PartId>('mock_part1'),
 				_rank: 1,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
@@ -120,15 +129,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 			}),
 		}),
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance2'),
+			_id: protectString<PartInstanceId>('mock_part_instance2'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part2'),
+				_id: protectString<PartId>('mock_part2'),
 				_rank: 2,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
@@ -138,15 +147,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 			}),
 		}),
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance3'),
+			_id: protectString<PartInstanceId>('mock_part_instance3'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part3'),
+				_id: protectString<PartId>('mock_part3'),
 				_rank: 3,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
@@ -157,15 +166,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		}),
 		// Segment 2
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance4'),
+			_id: protectString<PartInstanceId>('mock_part_instance4'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part4'),
+				_id: protectString<PartId>('mock_part4'),
 				_rank: 0,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment2'),
@@ -175,15 +184,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 			}),
 		}),
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance5'),
+			_id: protectString<PartInstanceId>('mock_part_instance5'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part5'),
+				_id: protectString<PartId>('mock_part5'),
 				_rank: 1,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment2'),
@@ -194,15 +203,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		}),
 		// Segment 3
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance6'),
+			_id: protectString<PartInstanceId>('mock_part_instance6'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment3'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part6'),
+				_id: protectString<PartId>('mock_part6'),
 				_rank: 0,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment3'),
@@ -213,15 +222,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		}),
 		// Segment 4
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance7'),
+			_id: protectString<PartInstanceId>('mock_part_instance7'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part7'),
+				_id: protectString<PartId>('mock_part7'),
 				_rank: 0,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment4'),
@@ -231,15 +240,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 			}),
 		}),
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance8'),
+			_id: protectString<PartInstanceId>('mock_part_instance8'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part8'),
+				_id: protectString<PartId>('mock_part8'),
 				_rank: 1,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment4'),
@@ -250,15 +259,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 			}),
 		}),
 		literal<DBPartInstance>({
-			_id: protectString('mock_part_instance9'),
+			_id: protectString<PartInstanceId>('mock_part_instance9'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('mock_part9'),
+				_id: protectString<PartId>('mock_part9'),
 				_rank: 2,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment4'),
@@ -269,15 +278,15 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		}),
 
 		literal<DBPartInstance>({
-			_id: protectString('orphan_part_instance1'), // after mock_part_instance8
+			_id: protectString<PartInstanceId>('orphan_part_instance1'), // after mock_part_instance8
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
-				_id: protectString('orphan_1'),
+				_id: protectString<PartId>('orphan_1'),
 				_rank: 1.5,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment4'),
@@ -467,18 +476,18 @@ describe('ensureNextPartIsValid', () => {
 	})
 	test('Next part instance is orphaned: "deleted"', async () => {
 		// Insert a temporary instance
-		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		const instanceId: PartInstanceId = protectString<PartInstanceId>('orphaned_first_part')
 		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
-				playlistActivationId: protectString('active'),
-				segmentPlayoutId: protectString(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				takeCount: 0,
 				rehearsal: false,
 				part: literal<DBPart>({
-					_id: protectString('orphan_1'),
+					_id: protectString<PartId>('orphan_1'),
 					_rank: 1.5,
 					rundownId: rundownId,
 					segmentId: protectString('mock_segment1'),
@@ -504,18 +513,18 @@ describe('ensureNextPartIsValid', () => {
 	})
 	test('Next part instance is orphaned: "deleted" and manually set', async () => {
 		// Insert a temporary instance
-		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		const instanceId: PartInstanceId = protectString<PartInstanceId>('orphaned_first_part')
 		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
-				playlistActivationId: protectString('active'),
-				segmentPlayoutId: protectString(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				takeCount: 0,
 				rehearsal: false,
 				part: literal<DBPart>({
-					_id: protectString('orphan_1'),
+					_id: protectString<PartId>('orphan_1'),
 					_rank: 1.5,
 					rundownId: rundownId,
 					segmentId: protectString('mock_segment1'),
@@ -551,18 +560,18 @@ describe('ensureNextPartIsValid', () => {
 			syncIngestUpdateToPartInstance: jest.fn(),
 		})
 
-		const instanceId: PartInstanceId = protectString('orphaned_first_part_with_callback')
+		const instanceId: PartInstanceId = protectString<PartInstanceId>('orphaned_first_part_with_callback')
 		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
-				playlistActivationId: protectString('active'),
-				segmentPlayoutId: protectString(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				takeCount: 0,
 				rehearsal: false,
 				part: literal<DBPart>({
-					_id: protectString('orphan_with_callback_1'),
+					_id: protectString<PartId>('orphan_with_callback_1'),
 					_rank: 1.5,
 					rundownId: rundownId,
 					segmentId: protectString('mock_segment1'),
@@ -582,9 +591,9 @@ describe('ensureNextPartIsValid', () => {
 	})
 	test('Next part is invalid, but instance is not', async () => {
 		// Insert a temporary instance
-		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		const instanceId: PartInstanceId = protectString<PartInstanceId>('orphaned_first_part')
 		const part = literal<DBPart>({
-			_id: protectString('orphan_1'),
+			_id: protectString<PartId>('orphan_1'),
 			_rank: 1.5,
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
@@ -597,8 +606,8 @@ describe('ensureNextPartIsValid', () => {
 				_id: instanceId,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),
-				playlistActivationId: protectString('active'),
-				segmentPlayoutId: protectString(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				takeCount: 0,
 				rehearsal: false,
 				part: part,
@@ -617,9 +626,9 @@ describe('ensureNextPartIsValid', () => {
 	})
 	test('Next part is last in rundown and gets deleted', async () => {
 		// Insert a temporary instance
-		const instanceId: PartInstanceId = protectString('tmp_part_1_instance')
+		const instanceId: PartInstanceId = protectString<PartInstanceId>('tmp_part_1_instance')
 		const part = literal<DBPart>({
-			_id: protectString('tmp_part_1'),
+			_id: protectString<PartId>('tmp_part_1'),
 			_rank: 99,
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
@@ -632,8 +641,8 @@ describe('ensureNextPartIsValid', () => {
 				_id: instanceId,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment4'),
-				playlistActivationId: protectString('active'),
-				segmentPlayoutId: protectString(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				takeCount: 0,
 				rehearsal: false,
 				part: part,

@@ -52,6 +52,7 @@ import {
 import {
 	PartId,
 	PartInstanceId,
+	PieceId,
 	PieceInstanceId,
 	RundownId,
 	SegmentId,
@@ -287,7 +288,7 @@ export class PartAndPieceInstanceActionService {
 		}
 
 		const pieceDB = await this._context.directCollections.Pieces.findOne({
-			_id: protectString(piece._id),
+			_id: protectString<PieceId>(piece._id),
 			startRundownId: { $in: this._playoutModel.getRundownIds() },
 		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
@@ -323,7 +324,7 @@ export class PartAndPieceInstanceActionService {
 			partInstance.partInstance.part._id,
 			part === 'current'
 		)[0]
-		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
+		piece._id = getRandomId<PieceId>() // Make id random, as postProcessPieces is too predictable (for ingest)
 
 		// Do the work
 		const newPieceInstance = partInstance.insertAdlibbedPiece(piece, undefined)
@@ -343,7 +344,7 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('Some valid properties must be defined')
 		}
 
-		const foundPieceInstance = this._playoutModel.findPieceInstance(protectString(pieceInstanceId))
+		const foundPieceInstance = this._playoutModel.findPieceInstance(protectString<PieceInstanceId>(pieceInstanceId))
 		if (!foundPieceInstance) {
 			throw new Error('PieceInstance could not be found')
 		}
@@ -509,7 +510,7 @@ export class PartAndPieceInstanceActionService {
 
 		const part: Omit<DBPart, 'segmentId' | 'rundownId' | '_rank'> = {
 			...rawPart,
-			_id: getRandomId(),
+			_id: getRandomId<PartId>(),
 			notes: [],
 			invalid: false,
 			invalidReason: undefined,

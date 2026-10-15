@@ -1,6 +1,16 @@
 import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '../../dataModel/PartInstance.js'
-import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '../../dataModel/Ids.js'
+import {
+	PartId,
+	PartInstanceId,
+	PieceInstanceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+	StudioId,
+} from '../../dataModel/Ids.js'
 import { DBPart } from '../../dataModel/Part.js'
 import { EmptyPieceTimelineObjectsBlob, Piece } from '../../dataModel/Piece.js'
 import { PieceInstance, PieceInstancePiece } from '../../dataModel/PieceInstance.js'
@@ -54,10 +64,10 @@ describe('Infinites', () => {
 			clear?: boolean
 		): PieceInstance {
 			return literal<PieceInstance>({
-				_id: protectString(id),
+				_id: protectString<PieceInstanceId>(id),
 				rundownId: rundownId,
-				partInstanceId: protectString(''),
-				playlistActivationId: protectString('active'),
+				partInstanceId: protectString<PartInstanceId>(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
 				piece: literal<PieceInstancePiece>({
 					_id: protectString(`${id}_p`),
 					externalId: '',
@@ -94,8 +104,8 @@ describe('Infinites', () => {
 				externalId,
 				name,
 				showStyleVariantId: protectString('test-variant'),
-				showStyleBaseId: protectString('test-base'),
-				studioId: protectString('studio0'),
+				showStyleBaseId: protectString<ShowStyleBaseId>('test-base'),
+				studioId: protectString<StudioId>('studio0'),
 				created: 0,
 				modified: 0,
 				importVersions: {
@@ -116,10 +126,10 @@ describe('Infinites', () => {
 		}
 
 		test('multiple continued pieces starting at 0 should preserve the newest', () => {
-			const playlistId = protectString('playlist0')
-			const rundownId = protectString('rundown0')
-			const segmentId = protectString('segment0')
-			const partId = protectString('part0')
+			const playlistId = protectString<RundownPlaylistId>('playlist0')
+			const rundownId = protectString<RundownId>('rundown0')
+			const segmentId = protectString<SegmentId>('segment0')
+			const partId = protectString<PartId>('part0')
 			const previousPartInstance = { rundownId, segmentId, partId }
 			const previousSegment = { _id: previousPartInstance.segmentId }
 			const previousPartPieces: PieceInstance[] = [
@@ -154,7 +164,7 @@ describe('Infinites', () => {
 			]
 			const segment = { _id: segmentId }
 			const part = { rundownId, segmentId }
-			const instanceId = protectString('newInstance0')
+			const instanceId = protectString<PartInstanceId>('newInstance0')
 			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
 			const continuedInstances = runAndTidyResult(
@@ -178,10 +188,10 @@ describe('Infinites', () => {
 			])
 		})
 		test('piece dynamically converted to infinite should be continued', () => {
-			const playlistId = protectString('playlist0')
-			const rundownId = protectString('rundown0')
-			const segmentId = protectString('segment0')
-			const partId = protectString('part0')
+			const playlistId = protectString<RundownPlaylistId>('playlist0')
+			const rundownId = protectString<RundownId>('rundown0')
+			const segmentId = protectString<SegmentId>('segment0')
+			const partId = protectString<PartId>('part0')
 			const previousPartInstance = { rundownId, segmentId, partId }
 			const previousSegment = { _id: previousPartInstance.segmentId }
 			const previousPartPieces: PieceInstance[] = [
@@ -199,7 +209,7 @@ describe('Infinites', () => {
 			]
 			const segment = { _id: segmentId }
 			const part = { rundownId, segmentId }
-			const instanceId = protectString('newInstance0')
+			const instanceId = protectString<PartInstanceId>('newInstance0')
 			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
 			const continuedInstances = runAndTidyResult(
@@ -219,10 +229,10 @@ describe('Infinites', () => {
 			])
 		})
 		test('ignore pieces that have stopped', () => {
-			const playlistId = protectString('playlist0')
-			const rundownId = protectString('rundown0')
-			const segmentId = protectString('segment0')
-			const partId = protectString('part0')
+			const playlistId = protectString<RundownPlaylistId>('playlist0')
+			const rundownId = protectString<RundownId>('rundown0')
+			const segmentId = protectString<SegmentId>('segment0')
+			const partId = protectString<PartId>('part0')
 			const previousPartInstance = { rundownId, segmentId, partId }
 			const previousSegment = { _id: previousPartInstance.segmentId }
 			const previousPartPieces: PieceInstance[] = [
@@ -260,7 +270,7 @@ describe('Infinites', () => {
 			]
 			const segment = { _id: segmentId }
 			const part = { rundownId, segmentId }
-			const instanceId = protectString('newInstance0')
+			const instanceId = protectString<PartInstanceId>('newInstance0')
 			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
 			const continuedInstances = runAndTidyResult(
@@ -281,10 +291,10 @@ describe('Infinites', () => {
 		})
 
 		describe('AdlibTesting', () => {
-			const playlistId = protectString('playlist0')
-			const rundownId = protectString('rundown0')
-			const segmentId = protectString('segment0')
-			const partId = protectString('part0')
+			const playlistId = protectString<RundownPlaylistId>('playlist0')
+			const rundownId = protectString<RundownId>('rundown0')
+			const segmentId = protectString<SegmentId>('segment0')
+			const partId = protectString<PartId>('part0')
 			const previousPartInstance = { rundownId, segmentId, partId }
 			const previousPartPieces: PieceInstance[] = [
 				createPieceInstanceAsInfinite(
@@ -298,7 +308,7 @@ describe('Infinites', () => {
 				),
 			]
 			const part = { rundownId, segmentId }
-			const instanceId = protectString('newInstance0')
+			const instanceId = protectString<PartInstanceId>('newInstance0')
 			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
 			test('normal rundown', () => {

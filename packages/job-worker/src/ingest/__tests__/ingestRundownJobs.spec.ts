@@ -9,7 +9,7 @@ import {
 	handleUpdatedRundownMetaData,
 	handleUserUnsyncRundown,
 } from '../ingestRundownJobs.js'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestRundownWithSource } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
@@ -173,13 +173,13 @@ describe('handleRegenerateRundown', () => {
 })
 
 describe('handleUserUnsyncRundown', () => {
-	const rundownId: RundownId = protectString('rundown0')
+	const rundownId: RundownId = protectString<RundownId>('rundown0')
 
 	async function createRundown(context: MockJobContext, fragment?: Partial<DBRundown>) {
 		await context.mockCollections.Rundowns.insertOne({
 			_id: rundownId,
 			studioId: context.studioId,
-			showStyleBaseId: protectString('showStyleBase0'),
+			showStyleBaseId: protectString<ShowStyleBaseId>('showStyleBase0'),
 			showStyleVariantId: protectString('showStyleVariant0'),
 			created: 0,
 			modified: 0,
@@ -187,7 +187,7 @@ describe('handleUserUnsyncRundown', () => {
 			externalId: 'rundownExternal0',
 			name: 'Rundown',
 			timing: {} as any,
-			playlistId: protectString('playlist0'),
+			playlistId: protectString<RundownPlaylistId>('playlist0'),
 			source: {
 				type: 'testing',
 				showStyleVariantId: protectString('showStyleVariant0'),

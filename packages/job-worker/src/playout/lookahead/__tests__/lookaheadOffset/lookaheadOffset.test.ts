@@ -7,6 +7,7 @@ jest.mock('../../../../playout/lookahead/index.js', () => {
 	}
 })
 jest.mock('../../../../playout/lookahead/util.js')
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../../../../jobs/index.js'
@@ -34,7 +35,7 @@ describe('lookahead offset integration', () => {
 	test('returns empty array when no lookahead mappings are defined', async () => {
 		getOrderedPartsAfterPlayheadMock.mockReturnValue([
 			{
-				_id: protectString('p1'),
+				_id: protectString<PartId>('p1'),
 				classesForNext: [],
 			} as any,
 		])
@@ -62,10 +63,10 @@ describe('lookahead offset integration', () => {
 	})
 	test('respects lookaheadMaxSearchDistance', async () => {
 		getOrderedPartsAfterPlayheadMock.mockReturnValue([
-			{ _id: protectString('p1'), classesForNext: [] } as any,
-			{ _id: protectString('p2'), classesForNext: [] } as any,
-			{ _id: protectString('p3'), classesForNext: [] } as any,
-			{ _id: protectString('p4'), classesForNext: [] } as any,
+			{ _id: protectString<PartId>('p1'), classesForNext: [] } as any,
+			{ _id: protectString<PartId>('p2'), classesForNext: [] } as any,
+			{ _id: protectString<PartId>('p3'), classesForNext: [] } as any,
+			{ _id: protectString<PartId>('p4'), classesForNext: [] } as any,
 		])
 
 		const findFetchMock = jest
@@ -137,8 +138,8 @@ describe('lookahead offset integration', () => {
 		} as PlayoutModel
 		findLargestLookaheadDistanceMock.mockReturnValue(1)
 		getOrderedPartsAfterPlayheadMock.mockReturnValue([
-			{ _id: protectString('p1'), classesForNext: [] } as any,
-			{ _id: protectString('p2'), classesForNext: [] } as any,
+			{ _id: protectString<PartId>('p1'), classesForNext: [] } as any,
+			{ _id: protectString<PartId>('p2'), classesForNext: [] } as any,
 		])
 
 		context.directCollections.Pieces.findFetch = jest
@@ -164,7 +165,9 @@ describe('lookahead offset integration', () => {
 				nextTimeOffset: 5000,
 			},
 		} as PlayoutModel
-		getOrderedPartsAfterPlayheadMock.mockReturnValue([{ _id: protectString('p1'), classesForNext: [] } as any])
+		getOrderedPartsAfterPlayheadMock.mockReturnValue([
+			{ _id: protectString<PartId>('p1'), classesForNext: [] } as any,
+		])
 
 		context.directCollections.Pieces.findFetch = jest
 			.fn()
@@ -178,9 +181,9 @@ describe('lookahead offset integration', () => {
 			next: {
 				partTimes: { nowInPart: 0 },
 				partInstance: {
-					_id: protectString('pNextInstance'),
+					_id: protectString<PartInstanceId>('pNextInstance'),
 					part: {
-						_id: protectString('pNext'),
+						_id: protectString<PartId>('pNext'),
 						_rank: 0,
 					},
 					playlistActivationId: 'pA1',
@@ -189,7 +192,7 @@ describe('lookahead offset integration', () => {
 					wrapPieceToInstance(
 						makeSimplePiece({ partId: 'pNext', layer: 'layer1', start: 0 }),
 						protectString('pA1'),
-						protectString('pNextInstance')
+						protectString<PartInstanceId>('pNextInstance')
 					),
 				],
 				calculatedTimings: undefined,

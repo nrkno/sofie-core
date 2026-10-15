@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { updateSegmentIdsForAdlibbedPartInstances } from '../updateSegmentIdsForAdlibbedPartInstances.js'
 import { BeforePartMapItem } from '../../commit.js'
-import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -94,22 +94,22 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 
 		const parts: DBPart[] = [
 			{
-				_id: protectString('part0'),
+				_id: protectString<PartId>('part0'),
 				_rank: 0,
 				segmentId: protectString('segment0'),
 			} as any,
 			{
-				_id: protectString('part1'),
+				_id: protectString<PartId>('part1'),
 				_rank: 1,
 				segmentId: protectString('segment0'),
 			} as any,
 			{
-				_id: protectString('part2'),
+				_id: protectString<PartId>('part2'),
 				_rank: 0,
 				segmentId: protectString('segment1'),
 			} as any,
 			{
-				_id: protectString('part3'),
+				_id: protectString<PartId>('part3'),
 				_rank: 1,
 				segmentId: protectString('segment1'),
 			} as any,
@@ -138,12 +138,12 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 
 	function createPartInstance(
 		segmentId: SegmentId,
-		partId: string,
+		partId: PartId,
 		rank: number,
 		orphaned: DBPartInstance['orphaned']
 	): DBPartInstance {
 		return literal<PartialDeep<DBPartInstance>>({
-			_id: protectString(`instance_${partId}`),
+			_id: protectString<PartInstanceId>(`instance_${partId}`),
 			rundownId,
 			segmentId,
 			orphaned,
@@ -155,7 +155,9 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 	}
 
 	test('no changes', async () => {
-		const partInstances = [createPartInstance(protectString('segment0'), 'part0b', 0.5, 'adlib-part')]
+		const partInstances = [
+			createPartInstance(protectString('segment0'), protectString<PartId>('part0b'), 0.5, 'adlib-part'),
+		]
 
 		const { context, fakeCollection } = createFakeContext(partInstances)
 
@@ -171,11 +173,11 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 	})
 
 	test('segment rename', async () => {
-		const newSegmentId = protectString('new-id')
+		const newSegmentId = protectString<SegmentId>('new-id')
 
 		const partInstances = [
-			createPartInstance(newSegmentId, 'part0', 0, undefined),
-			createPartInstance(protectString('segment0'), 'part0b', 0.5, 'adlib-part'),
+			createPartInstance(newSegmentId, protectString<PartId>('part0'), 0, undefined),
+			createPartInstance(protectString('segment0'), protectString<PartId>('part0b'), 0.5, 'adlib-part'),
 		]
 		const { context, fakeCollection } = createFakeContext(partInstances)
 
@@ -202,12 +204,12 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 			{
 				updateOne: {
 					filter: {
-						_id: protectString('instance_part0b'),
+						_id: protectString<PartInstanceId>('instance_part0b'),
 					},
 					update: {
 						$set: {
 							'part.segmentId': 'new-id',
-							segmentId: protectString('new-id'),
+							segmentId: protectString<SegmentId>('new-id'),
 						},
 					},
 				},

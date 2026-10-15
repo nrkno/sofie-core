@@ -19,7 +19,7 @@ describe('WatchedPackagesHelper', () => {
 			const context = setupDefaultJobEnvironment()
 			const helper = WatchedPackagesHelper.empty(context)
 
-			expect(helper.hasPackage(protectString('pkg1'))).toBe(false)
+			expect(helper.hasPackage(protectString<ExpectedPackageId>('pkg1'))).toBe(false)
 			expect(helper.getPackageInfo('pkg1')).toEqual([])
 		})
 	})
@@ -33,7 +33,7 @@ describe('WatchedPackagesHelper', () => {
 				pieceId: protectString('piece1'),
 			})
 
-			expect(helper.hasPackage(protectString('pkg1'))).toBe(false)
+			expect(helper.hasPackage(protectString<ExpectedPackageId>('pkg1'))).toBe(false)
 		})
 
 		it('creates helper with packages from rundown', async () => {
@@ -125,7 +125,7 @@ describe('WatchedPackagesHelper', () => {
 			// Package with matching source
 			await context.mockCollections.ExpectedPackages.insertOne(
 				literal<ExpectedPackageDB>({
-					_id: protectString('pkg1'),
+					_id: protectString<ExpectedPackageId>('pkg1'),
 					studioId: context.studioId,
 					rundownId: rundownId,
 					bucketId: null,
@@ -143,7 +143,7 @@ describe('WatchedPackagesHelper', () => {
 			// Package with non-matching source
 			await context.mockCollections.ExpectedPackages.insertOne(
 				literal<ExpectedPackageDB>({
-					_id: protectString('pkg2'),
+					_id: protectString<ExpectedPackageId>('pkg2'),
 					studioId: context.studioId,
 					rundownId: rundownId,
 					bucketId: null,
@@ -163,8 +163,8 @@ describe('WatchedPackagesHelper', () => {
 				pieceId: protectString('piece1'),
 			})
 
-			expect(helper.hasPackage(protectString('pkg1'))).toBe(true)
-			expect(helper.hasPackage(protectString('pkg2'))).toBe(false)
+			expect(helper.hasPackage(protectString<ExpectedPackageId>('pkg1'))).toBe(true)
+			expect(helper.hasPackage(protectString<ExpectedPackageId>('pkg2'))).toBe(false)
 		})
 
 		it('splits packages with multiple ingest sources', async () => {
@@ -312,7 +312,7 @@ describe('WatchedPackagesHelper', () => {
 			// Add multiple packages
 			await context.mockCollections.ExpectedPackages.insertOne(
 				literal<ExpectedPackageDB>({
-					_id: protectString('pkg1'),
+					_id: protectString<ExpectedPackageId>('pkg1'),
 					studioId: context.studioId,
 					rundownId: rundownId,
 					bucketId: null,
@@ -334,7 +334,7 @@ describe('WatchedPackagesHelper', () => {
 
 			await context.mockCollections.ExpectedPackages.insertOne(
 				literal<ExpectedPackageDB>({
-					_id: protectString('pkg2'),
+					_id: protectString<ExpectedPackageId>('pkg2'),
 					studioId: context.studioId,
 					rundownId: rundownId,
 					bucketId: null,
@@ -360,10 +360,10 @@ describe('WatchedPackagesHelper', () => {
 			})
 
 			// Filter to only keep pkg1
-			const filtered = helper.filter(context, (pkg) => pkg.packageId === protectString('pkg1'))
+			const filtered = helper.filter(context, (pkg) => pkg.packageId === protectString<ExpectedPackageId>('pkg1'))
 
-			expect(filtered.hasPackage(protectString('pkg1'))).toBe(true)
-			expect(filtered.hasPackage(protectString('pkg2'))).toBe(false)
+			expect(filtered.hasPackage(protectString<ExpectedPackageId>('pkg1'))).toBe(true)
+			expect(filtered.hasPackage(protectString<ExpectedPackageId>('pkg2'))).toBe(false)
 		})
 
 		it('filters package infos along with packages', async () => {
@@ -372,7 +372,7 @@ describe('WatchedPackagesHelper', () => {
 
 			await context.mockCollections.ExpectedPackages.insertOne(
 				literal<ExpectedPackageDB>({
-					_id: protectString('pkg1'),
+					_id: protectString<ExpectedPackageId>('pkg1'),
 					studioId: context.studioId,
 					rundownId: rundownId,
 					bucketId: null,
@@ -394,7 +394,7 @@ describe('WatchedPackagesHelper', () => {
 
 			await context.mockCollections.ExpectedPackages.insertOne(
 				literal<ExpectedPackageDB>({
-					_id: protectString('pkg2'),
+					_id: protectString<ExpectedPackageId>('pkg2'),
 					studioId: context.studioId,
 					rundownId: rundownId,
 					bucketId: null,
@@ -418,7 +418,7 @@ describe('WatchedPackagesHelper', () => {
 				literal<PackageInfoDB>({
 					_id: protectString('info1'),
 					studioId: context.studioId,
-					packageId: protectString('pkg1'),
+					packageId: protectString<ExpectedPackageId>('pkg1'),
 					deviceId: mockDeviceId,
 					type: PackageInfo.Type.SCAN,
 					expectedContentVersionHash: 'abc123',
@@ -431,7 +431,7 @@ describe('WatchedPackagesHelper', () => {
 				literal<PackageInfoDB>({
 					_id: protectString('info2'),
 					studioId: context.studioId,
-					packageId: protectString('pkg2'),
+					packageId: protectString<ExpectedPackageId>('pkg2'),
 					deviceId: mockDeviceId,
 					type: PackageInfo.Type.SCAN,
 					expectedContentVersionHash: 'def456',
@@ -445,7 +445,7 @@ describe('WatchedPackagesHelper', () => {
 				pieceId: protectString('piece1'),
 			})
 
-			const filtered = helper.filter(context, (pkg) => pkg.packageId === protectString('pkg1'))
+			const filtered = helper.filter(context, (pkg) => pkg.packageId === protectString<ExpectedPackageId>('pkg1'))
 
 			// Should only have info for pkg1
 			expect(filtered.getPackageInfo('package1')).toHaveLength(1)
@@ -492,7 +492,7 @@ describe('WatchedPackagesHelper', () => {
 				pieceId: protectString('piece1'),
 			})
 
-			expect(helper.hasPackage(protectString('nonexistent'))).toBe(false)
+			expect(helper.hasPackage(protectString<ExpectedPackageId>('nonexistent'))).toBe(false)
 		})
 	})
 
