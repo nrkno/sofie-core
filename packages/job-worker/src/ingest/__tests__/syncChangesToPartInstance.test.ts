@@ -37,6 +37,12 @@ import { defaultPiece } from '../../__mocks__/defaultCollectionObjects.js'
 
 jest.mock('../../playout/adlibTesting')
 import { validateAdlibTestingPartInstanceProperties } from '../../playout/adlibTesting.js'
+import {
+	PartId,
+	PartInstanceId,
+	RundownPlaylistActivationId,
+	SegmentPlayoutId,
+} from '@sofie-automation/corelib/src/dataModel/Ids.js'
 
 const mockOptions = {
 	fallbackMockImplementation: () => {
@@ -47,11 +53,11 @@ const mockOptions = {
 
 function createMockPart(id: string): DBPart {
 	return {
-		_id: protectString(id),
+		_id: protectString<PartId>(id),
 		_rank: 1,
 		externalId: 'mockPartExternalId',
 		segmentId: protectString('mockSegmentId'),
-		rundownId: protectString('mockRundownId'),
+		rundownId: protectString<RundownId>('mockRundownId'),
 		title: 'mockPartTitle',
 		expectedDurationWithTransition: undefined,
 		userEditOperations: undefined,
@@ -139,14 +145,14 @@ describe('SyncChangesToPartInstancesWorker', () => {
 			return mock<PlayoutPartInstanceModel>(
 				{
 					partInstance: {
-						_id: protectString(id),
+						_id: protectString<PartInstanceId>(id),
 						part: createMockPart(id),
 						segmentId: protectString('mockSegmentId'),
-						rundownId: protectString('mockRundownId'),
+						rundownId: protectString<RundownId>('mockRundownId'),
 						takeCount: 0,
 						rehearsal: false,
-						playlistActivationId: protectString('mockPlaylistActivationId'),
-						segmentPlayoutId: protectString('mockSegmentPlayoutId'),
+						playlistActivationId: protectString<RundownPlaylistActivationId>('mockPlaylistActivationId'),
+						segmentPlayoutId: protectString<SegmentPlayoutId>('mockSegmentPlayoutId'),
 					} satisfies PlayoutPartInstanceModel['partInstance'],
 					pieceInstances: [] satisfies PlayoutPartInstanceModel['pieceInstances'],
 
@@ -318,7 +324,7 @@ describe('SyncChangesToPartInstancesWorker', () => {
 			const playlistLock = await context.lockPlaylist(playlistId)
 
 			const rundown: DBRundown = {
-				_id: protectString('mockRundownId'),
+				_id: protectString<RundownId>('mockRundownId'),
 				externalId: 'mockExternalId',
 				playlistId: playlistId,
 				showStyleBaseId: showStyleCompound._id,
@@ -349,7 +355,7 @@ describe('SyncChangesToPartInstancesWorker', () => {
 			}
 
 			const part0: DBPart = {
-				_id: protectString('mockPartId0'),
+				_id: protectString<PartId>('mockPartId0'),
 				segmentId: segment._id,
 				rundownId: rundown._id,
 				title: 'mockPartTitle0',
@@ -360,20 +366,20 @@ describe('SyncChangesToPartInstancesWorker', () => {
 			}
 
 			const nextPartInstance: DBPartInstance = {
-				_id: protectString('mockPartInstanceId'),
+				_id: protectString<PartInstanceId>('mockPartInstanceId'),
 				part: part0,
 				segmentId: segment._id,
 				rundownId: rundown._id,
 				takeCount: 0,
 				rehearsal: false,
-				playlistActivationId: protectString('mockPlaylistActivationId'),
-				segmentPlayoutId: protectString('mockSegmentPlayoutId'),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('mockPlaylistActivationId'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>('mockSegmentPlayoutId'),
 			}
 
 			const playlist: DBRundownPlaylist = {
 				_id: playlistId,
 				externalId: 'mockExternalId',
-				activationId: protectString('mockActivationId'),
+				activationId: protectString<RundownPlaylistActivationId>('mockActivationId'),
 				currentPartInfo: null,
 				nextPartInfo: {
 					rundownId: nextPartInstance.rundownId,

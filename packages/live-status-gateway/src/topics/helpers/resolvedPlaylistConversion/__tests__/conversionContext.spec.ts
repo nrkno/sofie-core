@@ -1,5 +1,12 @@
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
+	PartInstanceId,
+	PieceInstanceId,
+	RundownId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
 	createResolvedPlaylistConversionContext,
 	findCurrentPartInstance,
 	findNextPartInstance,
@@ -18,8 +25,8 @@ import {
 
 describe('conversionContext', () => {
 	it('builds sorted lookup context and current/next pointers', () => {
-		const currentId = protectString('current_pi')
-		const nextId = protectString('next_pi')
+		const currentId = protectString<PartInstanceId>('current_pi')
+		const nextId = protectString<PartInstanceId>('next_pi')
 		const playlist = makePlaylist({
 			currentPartInfo: { partInstanceId: currentId },
 			nextPartInfo: { partInstanceId: nextId },
@@ -77,8 +84,8 @@ describe('conversionContext', () => {
 		const playlist = makePlaylist()
 		const rundown0 = makeRundown('rundown0')
 		const rundown1 = makeRundown('rundown1')
-		rundown0.showStyleBaseId = protectString('showStyleBaseA')
-		rundown1.showStyleBaseId = protectString('showStyleBaseB')
+		rundown0.showStyleBaseId = protectString<ShowStyleBaseId>('showStyleBaseA')
+		rundown1.showStyleBaseId = protectString<ShowStyleBaseId>('showStyleBaseB')
 
 		const ctx = createResolvedPlaylistConversionContext({
 			playlistState: playlist,
@@ -91,14 +98,14 @@ describe('conversionContext', () => {
 			pieceInstancesInPlaylistState: [],
 		})
 
-		expect(String(ctx.rundownsToShowStyles.get(protectString('rundown0')))).toBe('showStyleBaseA')
-		expect(String(ctx.rundownsToShowStyles.get(protectString('rundown1')))).toBe('showStyleBaseB')
+		expect(String(ctx.rundownsToShowStyles.get(protectString<RundownId>('rundown0')))).toBe('showStyleBaseA')
+		expect(String(ctx.rundownsToShowStyles.get(protectString<RundownId>('rundown1')))).toBe('showStyleBaseB')
 	})
 
 	it('omits missing rundowns from rundownsToShowStyles', () => {
 		const playlist = makePlaylist()
 		const rundown0 = makeRundown('rundown0')
-		rundown0.showStyleBaseId = protectString('showStyleBaseA')
+		rundown0.showStyleBaseId = protectString<ShowStyleBaseId>('showStyleBaseA')
 
 		const ctx = createResolvedPlaylistConversionContext({
 			playlistState: playlist,
@@ -111,8 +118,8 @@ describe('conversionContext', () => {
 			pieceInstancesInPlaylistState: [],
 		})
 
-		expect(String(ctx.rundownsToShowStyles.get(protectString('rundown0')))).toBe('showStyleBaseA')
-		expect(ctx.rundownsToShowStyles.has(protectString('rundown1'))).toBe(false)
+		expect(String(ctx.rundownsToShowStyles.get(protectString<RundownId>('rundown0')))).toBe('showStyleBaseA')
+		expect(ctx.rundownsToShowStyles.has(protectString<RundownId>('rundown1'))).toBe(false)
 	})
 
 	it('query adapters filter data correctly', () => {
@@ -131,12 +138,12 @@ describe('conversionContext', () => {
 			'segment0'
 		)
 		expect(
-			ctx.accessors.getActivePartInstances({ _id: protectString('playlist0') } as any, {
-				_id: protectString('pi0'),
+			ctx.accessors.getActivePartInstances({ _id: protectString<RundownPlaylistId>('playlist0') } as any, {
+				_id: protectString<PartInstanceId>('pi0'),
 			}).length
 		).toBe(1)
 		expect(ctx.accessors.piecesFind({ _id: protectString('piece_x') } as any).length).toBe(1)
-		expect(ctx.accessors.pieceInstancesFind({ _id: protectString('x') } as any).length).toBe(1)
+		expect(ctx.accessors.pieceInstancesFind({ _id: protectString<PieceInstanceId>('x') } as any).length).toBe(1)
 	})
 
 	it('getActivePartInstances omits reset part instances', () => {
@@ -155,11 +162,13 @@ describe('conversionContext', () => {
 		})
 
 		expect(
-			ctx.accessors.getActivePartInstances({ _id: protectString('playlist0') } as any).map((p) => String(p._id))
+			ctx.accessors
+				.getActivePartInstances({ _id: protectString<RundownPlaylistId>('playlist0') } as any)
+				.map((p) => String(p._id))
 		).toEqual(['pi0'])
 		expect(
-			ctx.accessors.getActivePartInstances({ _id: protectString('playlist0') } as any, {
-				_id: protectString('pi_reset'),
+			ctx.accessors.getActivePartInstances({ _id: protectString<RundownPlaylistId>('playlist0') } as any, {
+				_id: protectString<PartInstanceId>('pi_reset'),
 			}).length
 		).toBe(0)
 	})

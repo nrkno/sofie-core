@@ -7,7 +7,7 @@ import {
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { literal, getRandomId, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { LogLevel } from '@sofie-automation/meteor-lib/dist/lib'
-import { protectString, ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime } from '../../lib/lib'
 import { waitUntil } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -34,7 +34,16 @@ import {
 	PlayoutChangedType,
 	TimelineTriggerTimeResult,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	MediaObjId,
+	PartId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	PartInstanceId,
+	PieceInstanceId,
+	RundownPlaylistActivationId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	MediaObjects,
 	Parts,
@@ -48,6 +57,7 @@ import {
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
+import { PeripheralDeviceId } from '@sofie-automation/server-core-integration'
 
 const MeteorCall = makeMeteorCallForTest({
 	methods: PeripheralDeviceAPIMethods,
@@ -64,8 +74,8 @@ describe('test peripheralDevice general API methods', () => {
 	beforeAll(async () => {
 		env = await setupDefaultStudioEnvironment()
 		device = env.ingestDevice
-		rundownID = protectString('rundown0')
-		rundownPlaylistID = protectString('rundownPlaylist0')
+		rundownID = protectString<RundownId>('rundown0')
+		rundownPlaylistID = protectString<RundownPlaylistId>('rundownPlaylist0')
 		const rundownExternalID = 'rundown0'
 		await RundownPlaylists.mutableCollection.insertAsync({
 			_id: rundownPlaylistID,
@@ -77,7 +87,7 @@ describe('test peripheralDevice general API methods', () => {
 			currentPartInfo: null,
 			nextPartInfo: null,
 			previousPartsInfo: [],
-			activationId: protectString('active'),
+			activationId: protectString<RundownPlaylistActivationId>('active'),
 			timing: {
 				type: PlaylistTimingType.None,
 			},
@@ -120,7 +130,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Fire',
 		})
 		await Parts.mutableCollection.insertAsync({
-			_id: protectString('part000'),
+			_id: protectString<PartId>('part000'),
 			_rank: 0,
 			externalId: 'part000',
 			segmentId: segmentID,
@@ -137,7 +147,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Mock',
 			sourceLayerId: Object.keys(env.showStyleBase.sourceLayersWithOverrides.defaults)[0],
 			outputLayerId: Object.keys(env.showStyleBase.outputLayersWithOverrides.defaults)[0],
-			startPartId: protectString('part000'),
+			startPartId: protectString<PartId>('part000'),
 			startSegmentId: segmentID,
 			startRundownId: rundownID,
 			lifespan: PieceLifespan.WithinPart,
@@ -147,7 +157,7 @@ describe('test peripheralDevice general API methods', () => {
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 		await Parts.mutableCollection.insertAsync({
-			_id: protectString('part001'),
+			_id: protectString<PartId>('part001'),
 			_rank: 1,
 			externalId: 'part001',
 			segmentId: segmentID,
@@ -371,8 +381,8 @@ describe('test peripheralDevice general API methods', () => {
 
 		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
 
-		const partInstanceId = getRandomId()
-		const pieceInstanceId = getRandomId()
+		const partInstanceId = getRandomId<PartInstanceId>()
+		const pieceInstanceId = getRandomId<PieceInstanceId>()
 		const time0 = getCurrentTime()
 		const time1 = getCurrentTime()
 		const time2 = getCurrentTime()
@@ -638,7 +648,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	// test Media Scanner API
 	describe('Media Scanner API', () => {
-		let deviceId: ProtectedString<any>
+		let deviceId: PeripheralDeviceId
 		const MOCK_COLLECTION = 'MockCollection'
 		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
 		const MOCK_OBJID = getRandomString()
@@ -677,7 +687,7 @@ describe('test peripheralDevice general API methods', () => {
 				collectionId: MOCK_COLLECTION,
 			})
 			await MediaObjects.insertAsync({
-				_id: protectString(MOCK_COLLECTION + '_' + MOCK_OBJID),
+				_id: protectString<MediaObjId>(MOCK_COLLECTION + '_' + MOCK_OBJID),
 				_rev: '1',
 				_attachments: {},
 				cinf: '',

@@ -161,7 +161,7 @@ export class StudioDeviceTriggerManager {
 					})
 
 					if (!isPreviewableAction(thisAction)) {
-						const adLibPreviewId = protectString(`${actionId}_preview`)
+						const adLibPreviewId = protectString<PreviewWrappedAdLibId>(`${actionId}_preview`)
 
 						addedPreviewIds.push(adLibPreviewId)
 						DeviceTriggerMountedActionAdlibsPreview.replace(

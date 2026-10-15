@@ -1,6 +1,7 @@
 import { IBlueprintPieceType, PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import clone from 'fast-clone'
 import { EmptyPieceTimelineObjectsBlob, Piece } from '../../dataModel/Piece.js'
+import { PartId, PartInstanceId, PieceInstanceId, RundownId, RundownPlaylistActivationId } from '../../dataModel/Ids.js'
 import { PieceInstance, PieceInstancePiece, ResolvedPieceInstance } from '../../dataModel/PieceInstance.js'
 import { literal } from '../../lib.js'
 import { protectString } from '../../protectedString.js'
@@ -22,14 +23,14 @@ describe('processAndPrunePieceInstanceTimings', () => {
 		infinite?: PieceInstance['infinite']
 	): PieceInstance {
 		return literal<PieceInstance>({
-			_id: protectString(id),
-			rundownId: protectString(''),
-			partInstanceId: protectString(''),
-			playlistActivationId: protectString('active'),
+			_id: protectString<PieceInstanceId>(id),
+			rundownId: protectString<RundownId>(''),
+			partInstanceId: protectString<PartInstanceId>(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
 			piece: literal<PieceInstancePiece>({
 				_id: protectString(`${id}_p`),
 				externalId: '',
-				startPartId: protectString(''),
+				startPartId: protectString<PartId>(''),
 				enable: enable,
 				name: '',
 				lifespan: lifespan,
@@ -573,14 +574,14 @@ describe('resolvePrunedPieceInstances', () => {
 		userDuration?: PieceInstance['userDuration']
 	): PieceInstanceWithTimings {
 		return literal<PieceInstanceWithTimings>({
-			_id: protectString(''),
-			rundownId: protectString(''),
-			partInstanceId: protectString(''),
-			playlistActivationId: protectString('active'),
+			_id: protectString<PieceInstanceId>(''),
+			rundownId: protectString<RundownId>(''),
+			partInstanceId: protectString<PartInstanceId>(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
 			piece: literal<PieceInstancePiece>({
 				_id: protectString(''),
 				externalId: '',
-				startPartId: protectString(''),
+				startPartId: protectString<PartId>(''),
 				enable: enable,
 				name: '',
 				lifespan: PieceLifespan.WithinPart,

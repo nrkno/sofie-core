@@ -7,7 +7,13 @@ import {
 	handleTTimerSetProjectedTime,
 } from '../tTimersJobs.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PartId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist/RundownPlaylist'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import {
@@ -44,7 +50,7 @@ describe('tTimersJobs', () => {
 					timing: {
 						type: 'none' as any,
 					},
-					activationId: protectString('activation1'),
+					activationId: protectString<RundownPlaylistActivationId>('activation1'),
 					rehearsal: false,
 					holdState: undefined,
 					tTimers: [
@@ -143,7 +149,7 @@ describe('tTimersJobs', () => {
 					timing: {
 						type: 'none' as any,
 					},
-					activationId: protectString('activation1'),
+					activationId: protectString<RundownPlaylistActivationId>('activation1'),
 					rehearsal: false,
 					holdState: undefined,
 					tTimers: [
@@ -184,7 +190,7 @@ describe('tTimersJobs', () => {
 					timing: {
 						type: 'none' as any,
 					},
-					activationId: protectString('activation2'),
+					activationId: protectString<RundownPlaylistActivationId>('activation2'),
 					rehearsal: false,
 					holdState: undefined,
 					tTimers: [
@@ -287,7 +293,7 @@ describe('tTimersJobs', () => {
 				context.studioId,
 				null,
 				playlistId,
-				protectString('showStyleBase0'),
+				protectString<ShowStyleBaseId>('showStyleBase0'),
 				protectString('showStyleVariant0')
 			)
 			const segmentId = protectString<SegmentId>('segment0')

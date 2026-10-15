@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { RundownId, SegmentId, PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	RundownId,
+	SegmentId,
+	PartId,
+	PartInstanceId,
+	RundownPlaylistActivationId,
+	SegmentPlayoutId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -22,7 +29,7 @@ const mockOptions = {
 }
 
 describe('updatePartInstanceRanks', () => {
-	const rundownId: RundownId = protectString('rundown0')
+	const rundownId: RundownId = protectString<RundownId>('rundown0')
 	const segmentId: SegmentId = protectString('segment0')
 
 	function getPartRanks(parts: DBPart[]): Array<{ id: PartId; rank: number }> {
@@ -34,15 +41,15 @@ describe('updatePartInstanceRanks', () => {
 		part: DBPart,
 		orphaned?: DBPartInstance['orphaned']
 	): PartInstanceId {
-		const id: PartInstanceId = protectString(`${part._id}_instance`)
+		const id: PartInstanceId = protectString<PartInstanceId>(`${part._id}_instance`)
 		partInstances.push({
 			_id: id,
 			rehearsal: false,
 			takeCount: 0,
 			rundownId,
 			segmentId: part.segmentId,
-			playlistActivationId: protectString('active'),
-			segmentPlayoutId: protectString(''),
+			playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+			segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 			part,
 			orphaned: orphaned,
 		})
@@ -123,7 +130,7 @@ describe('updatePartInstanceRanks', () => {
 
 	function createMinimalPart(id: string, rank: number, customSegmentId?: SegmentId): DBPart {
 		return {
-			_id: protectString(id),
+			_id: protectString<PartId>(id),
 			_rank: rank,
 			rundownId,
 			segmentId: customSegmentId ?? segmentId,
@@ -141,13 +148,13 @@ describe('updatePartInstanceRanks', () => {
 			parts.push(createMinimalPart(id, rank))
 
 			partInstances.push({
-				_id: protectString(`${id}_instance`),
+				_id: protectString<PartInstanceId>(`${id}_instance`),
 				rehearsal: false,
 				takeCount: 0,
 				rundownId,
 				segmentId,
-				playlistActivationId: protectString('active'),
-				segmentPlayoutId: protectString(''),
+				playlistActivationId: protectString<RundownPlaylistActivationId>('active'),
+				segmentPlayoutId: protectString<SegmentPlayoutId>(''),
 				part: createMinimalPart(id, rank),
 				// orphaned: orphaned,
 			})
@@ -168,7 +175,7 @@ describe('updatePartInstanceRanks', () => {
 		id: string,
 		newRank: number
 	): void {
-		const partId = protectString(id)
+		const partId = protectString<PartId>(id)
 
 		// let updated = false
 		for (const part of parts) {
@@ -178,13 +185,13 @@ describe('updatePartInstanceRanks', () => {
 			}
 		}
 
-		const partInstanceId = protectString(`${partId}_instance`)
+		const partInstanceId = protectString<PartInstanceId>(`${partId}_instance`)
 
 		addExpectedOp(expectedOps, partInstanceId, newRank, /*!updated ? 'deleted' :*/ null) // TODO - check this
 	}
 
 	function removePart(parts: DBPart[], expectedOps: AnyBulkWriteOperation<DBPartInstance>[], id: string) {
-		const partIndex = parts.findIndex((p) => p._id === protectString(id))
+		const partIndex = parts.findIndex((p) => p._id === protectString<PartId>(id))
 		expect(partIndex).not.toBe(-1)
 		parts.splice(partIndex, 1)
 
@@ -361,7 +368,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(parts, expectedResult, 'part04', 3)
 		updatePartRank(parts, expectedResult, 'part05', 4)
 		updatePartRank(parts, expectedResult, 'part03', 2.3333333333333335)
-		addExpectedOp(expectedResult, protectString(`${adlibId}_instance`), 2.6666666666666665, null)
+		addExpectedOp(expectedResult, protectString<PartInstanceId>(`${adlibId}_instance`), 2.6666666666666665, null)
 
 		await updateRanksForSegment(context, segmentId, parts, initialRanks)
 
@@ -485,7 +492,7 @@ describe('updatePartInstanceRanks', () => {
 		fakeCollection.bulkWrite.mockClear()
 
 		// Pretend the segment was renamed
-		const oldSegmentId = protectString(segmentId + '_2')
+		const oldSegmentId = protectString<SegmentId>(segmentId + '_2')
 
 		{
 			// Perform the operation with a different ingest model and for two segments
