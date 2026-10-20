@@ -1,5 +1,7 @@
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { addMigrationSteps } from './databaseMigration'
+import { ShowStyleBases } from '../collections'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /*
  * **************************************************************************************
@@ -13,4 +15,29 @@ import { addMigrationSteps } from './databaseMigration'
 
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// Add your migration here
+
+	{
+		id: 'Add branding to ShowStyleBase',
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const count = await ShowStyleBases.countDocuments({
+				branding: { $exists: false },
+			})
+			if (count > 0) return `There are ${count} ShowStyleBases without branding`
+			return false
+		},
+		migrate: async () => {
+			await ShowStyleBases.mutableCollection.updateAsync(
+				{
+					branding: { $exists: false },
+				},
+				{
+					$set: {
+						branding: wrapDefaultObject({}),
+					},
+				},
+				{ multi: true }
+			)
+		},
+	},
 ])
