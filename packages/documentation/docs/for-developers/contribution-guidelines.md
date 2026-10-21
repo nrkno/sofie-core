@@ -127,7 +127,7 @@ _(This policy is adapted from [the Human Voice policy](https://ai-policy.dev/pol
 
 This project **welcomes the thoughtful use of AI tools** when contributing, yet asks all contributors to follow two core principles.
 
-## Never let an LLM speak for you
+### Never let an LLM speak for you
 
 When maintainers read a comment, an issue, or a pull request from you, they want to know they are hearing your words. Grammar and spelling do not matter. What matters is real connection.
 
@@ -137,7 +137,7 @@ When maintainers read a comment, an issue, or a pull request from you, they want
 
 AI-generated summaries tend to be long-winded, dense, and often inaccurate. Simplicity is an art. The goal is not to sound impressive, but to communicate clearly.
 
-## Never let an LLM think for you
+### Never let an LLM think for you
 
 Go ahead and use AI to explore the codebase, or to write the function or test you need. But the final step before contributing should always be understanding what it has written.
 
@@ -149,7 +149,7 @@ Use AI to point you in the right direction, but always take personal responsibil
 
 Our aim is ensuring quality and maintaining the joy of collaborating and communicating with real people.
 
-## Summary
+### Summary
 
 - AI may be used to generate code or explore ideas
 - Comments, issues, and pull request descriptions must be written in your own voice
