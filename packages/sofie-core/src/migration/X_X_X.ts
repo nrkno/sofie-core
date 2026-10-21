@@ -22,8 +22,9 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: 'Add branding to ShowStyleBase',
 		canBeRunAutomatically: true,
 		validate: async () => {
+			// Also catches docs where applyConfig has set `branding.defaults` before this migration ran
 			const count = await ShowStyleBases.countDocuments({
-				branding: { $exists: false },
+				'branding.overrides': { $exists: false },
 			})
 			if (count > 0) return `There are ${count} ShowStyleBases without branding`
 			return false
@@ -36,6 +37,18 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				{
 					$set: {
 						branding: wrapDefaultObject({}),
+					},
+				},
+				{ multi: true }
+			)
+			// Preserve any defaults already written by applyConfig
+			await ShowStyleBases.mutableCollection.updateAsync(
+				{
+					'branding.overrides': { $exists: false },
+				},
+				{
+					$set: {
+						'branding.overrides': [],
 					},
 				},
 				{ multi: true }
